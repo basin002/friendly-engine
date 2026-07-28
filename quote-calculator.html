@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>R&R Machinery Moving — Instant Quote</title>
+<style>
+  :root {
+    --bg: #f2f0ea; --surface: #fbfaf6; --ink: #1e262c; --muted: #62707a;
+    --hairline: #d5d0c2; --accent: #2f6a8f; --accent-soft: #e4edf2;
+    --tag-bg: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14181b; --surface:#1b2124; --ink:#e7e4dc; --muted:#93a0a8;
+      --hairline:#303a3f; --accent:#74b8de; --accent-soft:#1f333e; --tag-bg:#20272b; }
+  }
+  :root[data-theme="dark"] { --bg:#14181b; --surface:#1b2124; --ink:#e7e4dc; --muted:#93a0a8;
+    --hairline:#303a3f; --accent:#74b8de; --accent-soft:#1f333e; --tag-bg:#20272b; }
+  :root[data-theme="light"] { --bg:#f2f0ea; --surface:#fbfaf6; --ink:#1e262c; --muted:#62707a;
+    --hairline:#d5d0c2; --accent:#2f6a8f; --accent-soft:#e4edf2; --tag-bg:#ffffff; }
+
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); color: var(--ink); margin: 0;
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+  body { max-width: 720px; margin: 0 auto; padding: 36px 20px 70px; }
+  h1 { font-family: Georgia, "Iowan Old Style", serif; font-size: clamp(22px,4vw,28px); margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 13.5px; margin: 0 0 28px; }
+  .mono { font-family: ui-monospace, "SF Mono", Consolas, monospace; }
+
+  .card { border: 1px solid var(--hairline); background: var(--surface); border-radius: 5px;
+    padding: 20px 22px; margin-bottom: 18px; }
+  .card h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .05em; font-family: ui-monospace, monospace;
+    color: var(--muted); margin: 0 0 16px; }
+
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 520px) { .field-grid { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.full { grid-column: 1 / -1; }
+  label { font-size: 12.5px; color: var(--muted); }
+  input, select {
+    font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 4px;
+    border: 1px solid var(--hairline); background: var(--tag-bg); color: var(--ink);
+  }
+  .checkline { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+  .checkline input { width: 16px; height: 16px; padding: 0; }
+
+  details.rates summary { cursor: pointer; font-size: 13px; color: var(--muted); list-style: none;
+    display: flex; align-items: center; gap: 6px; }
+  details.rates summary::-webkit-details-marker { display: none; }
+  details.rates summary::before { content: "▸"; font-size: 11px; }
+  details.rates[open] summary::before { content: "▾"; }
+  details.rates { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--hairline); }
+  .rates .field-grid { margin-top: 14px; }
+  .rates .field label { font-size: 11.5px; }
+
+  .result { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: 5px;
+    padding: 20px 22px; }
+  .result .range { font-family: Georgia, serif; font-size: 30px; font-weight: 700; color: var(--accent);
+    font-variant-numeric: tabular-nums; margin: 2px 0 14px; }
+  .lines { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .lines td { padding: 5px 0; border-bottom: 1px solid var(--hairline); }
+  .lines tr:last-child td { border-bottom: none; }
+  .lines td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .lines td:first-child { color: var(--muted); }
+
+  .note { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 16px; }
+  button.reset { font: inherit; font-size: 12px; background: none; border: 1px solid var(--hairline);
+    color: var(--muted); padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<h1>Instant Quote</h1>
+<p class="sub">R&amp;R Machinery Moving — starter pricing model. Edit the rates below once to match your real numbers; it remembers them after that.</p>
+
+<div class="card">
+  <h2>Job details</h2>
+  <div class="field-grid">
+    <div class="field">
+      <label for="equip">Equipment type</label>
+      <select id="equip">
+        <option>CNC machine</option>
+        <option>Press brake</option>
+        <option>Injection molder</option>
+        <option>Generator / genset</option>
+        <option>Other industrial equipment</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="weight">Weight (lbs)</label>
+      <input id="weight" type="number" min="0" value="4000">
+    </div>
+    <div class="field">
+      <label for="distance">Distance (miles)</label>
+      <input id="distance" type="number" min="0" value="38">
+    </div>
+    <div class="field">
+      <label for="rigging">Rigging complexity</label>
+      <select id="rigging">
+        <option value="simple">Simple — dock to dock</option>
+        <option value="moderate">Moderate — stairs / tight clearance</option>
+        <option value="complex">Complex — crane required</option>
+      </select>
+    </div>
+    <div class="field full">
+      <div class="checkline"><input id="permit" type="checkbox"> <label for="permit">Permit required</label></div>
+    </div>
+    <div class="field full">
+      <div class="checkline"><input id="rush" type="checkbox"> <label for="rush">Rush job (this week)</label></div>
+    </div>
+  </div>
+
+  <details class="rates">
+    <summary>Your rates (edit once, saved on this device)</summary>
+    <div class="field-grid">
+      <div class="field"><label for="r-mile">Base rate per mile ($)</label><input id="r-mile" type="number" step="0.25" value="4.25"></div>
+      <div class="field"><label for="r-crew">Crew rate per hour ($)</label><input id="r-crew" type="number" step="1" value="95"></div>
+      <div class="field"><label for="r-crane">Crane rate per hour ($)</label><input id="r-crane" type="number" step="1" value="185"></div>
+      <div class="field"><label for="r-permit">Permit flat fee ($)</label><input id="r-permit" type="number" step="1" value="275"></div>
+      <div class="field"><label for="r-rush">Rush surcharge (%)</label><input id="r-rush" type="number" step="1" value="15"></div>
+      <div class="field"><label for="r-moderate">Moderate rigging flat fee ($)</label><input id="r-moderate" type="number" step="1" value="450"></div>
+      <div class="field"><label for="r-complex">Complex rigging base fee ($)</label><input id="r-complex" type="number" step="1" value="1350"></div>
+      <div class="field"><label for="r-cranehrs">Estimated crane hours (complex)</label><input id="r-cranehrs" type="number" step="0.5" value="3"></div>
+    </div>
+    <p class="note"><button class="reset" id="reset-rates" type="button">Reset to starter defaults</button></p>
+  </details>
+</div>
+
+<div class="result">
+  <div class="mono" style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Estimated range</div>
+  <div class="range" id="range">$0 – $0</div>
+  <table class="lines" id="lines"></table>
+</div>
+
+<p class="note">
+  This is a starting pricing model, not a guarantee — always confirm rigging access and permit
+  requirements before quoting a firm number. All rates above are yours to adjust; they're saved
+  in this browser only.
+</p>
+
+<script>
+(function () {
+  var RATE_KEYS = ["r-mile","r-crew","r-crane","r-permit","r-rush","r-moderate","r-complex","r-cranehrs"];
+  var STORE_KEY = "rr-quote-rates-v1";
+
+  function loadRates() {
+    try {
+      var saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+      RATE_KEYS.forEach(function (k) {
+        if (saved[k] !== undefined) document.getElementById(k).value = saved[k];
+      });
+    } catch (e) {}
+  }
+  function saveRates() {
+    var out = {};
+    RATE_KEYS.forEach(function (k) { out[k] = document.getElementById(k).value; });
+    localStorage.setItem(STORE_KEY, JSON.stringify(out));
+  }
+  function resetRates() {
+    localStorage.removeItem(STORE_KEY);
+    document.getElementById("r-mile").value = 4.25;
+    document.getElementById("r-crew").value = 95;
+    document.getElementById("r-crane").value = 185;
+    document.getElementById("r-permit").value = 275;
+    document.getElementById("r-rush").value = 15;
+    document.getElementById("r-moderate").value = 450;
+    document.getElementById("r-complex").value = 1350;
+    document.getElementById("r-cranehrs").value = 3;
+    compute();
+  }
+
+  function weightTier(lbs) {
+    if (lbs < 2000) return { mult: 1.0, hours: 4 };
+    if (lbs < 6000) return { mult: 1.3, hours: 6 };
+    if (lbs < 15000) return { mult: 1.7, hours: 8 };
+    return { mult: 2.2, hours: 10 };
+  }
+
+  function num(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+  function compute() {
+    var weight = num("weight");
+    var distance = num("distance");
+    var rigging = document.getElementById("rigging").value;
+    var permit = document.getElementById("permit").checked;
+    var rush = document.getElementById("rush").checked;
+
+    var rMile = num("r-mile"), rCrew = num("r-crew"), rCrane = num("r-crane"),
+        rPermit = num("r-permit"), rRushPct = num("r-rush"), rModerate = num("r-moderate"),
+        rComplex = num("r-complex"), rCraneHrs = num("r-cranehrs");
+
+    var tier = weightTier(weight);
+    var lines = [];
+
+    var transport = distance * rMile * tier.mult;
+    lines.push(["Transport (" + distance + " mi × $" + rMile.toFixed(2) + "/mi × weight tier)", transport]);
+
+    var crew = tier.hours * rCrew;
+    lines.push(["Crew (" + tier.hours + " est. hrs × $" + rCrew + "/hr)", crew]);
+
+    var riggingFee = 0;
+    if (rigging === "moderate") {
+      riggingFee = rModerate;
+      lines.push(["Rigging — moderate access", riggingFee]);
+    } else if (rigging === "complex") {
+      riggingFee = rComplex + (rCraneHrs * rCrane);
+      lines.push(["Rigging — crane (" + rCraneHrs + " hrs × $" + rCrane + "/hr) + base", riggingFee]);
+    }
+
+    var permitFee = permit ? rPermit : 0;
+    if (permit) lines.push(["Permit", permitFee]);
+
+    var subtotal = transport + crew + riggingFee + permitFee;
+
+    var rushFee = rush ? subtotal * (rRushPct / 100) : 0;
+    if (rush) lines.push(["Rush surcharge (" + rRushPct + "%)", rushFee]);
+
+    var total = subtotal + rushFee;
+    var low = total * 0.92;
+    var high = total * 1.12;
+
+    document.getElementById("range").textContent =
+      "$" + Math.round(low).toLocaleString() + " – $" + Math.round(high).toLocaleString();
+
+    var tbody = document.getElementById("lines");
+    tbody.innerHTML = "";
+    lines.forEach(function (l) {
+      var tr = document.createElement("tr");
+      var a = document.createElement("td"); a.textContent = l[0];
+      var b = document.createElement("td"); b.textContent = "$" + Math.round(l[1]).toLocaleString();
+      tr.appendChild(a); tr.appendChild(b);
+      tbody.appendChild(tr);
+    });
+  }
+
+  var inputs = document.querySelectorAll("input, select");
+  inputs.forEach(function (el) {
+    el.addEventListener("input", function () {
+      if (RATE_KEYS.indexOf(el.id) !== -1) saveRates();
+      compute();
+    });
+  });
+  document.getElementById("reset-rates").addEventListener("click", resetRates);
+
+  loadRates();
+  compute();
+})();
+</script>
+</body>
+</html>
