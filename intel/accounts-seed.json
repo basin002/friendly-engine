@@ -1,0 +1,259 @@
+{
+  "_note": "Seed records extracted by hand from real work orders and email threads observed 2026-07-16 through 2026-07-30. This is a proof of the data model, not a complete dataset. Every field here came from an actual document — nothing is estimated. Prices are internal team figures from reply threads and have NOT been confirmed as sent to customers.",
+  "_extracted_on": "2026-07-30",
+  "companies": [
+    {
+      "id": "rigid-hitch",
+      "name": "Rigid Hitch",
+      "relationship": "customer",
+      "industry": "manufacturing / towing components",
+      "sites": [
+        {
+          "address": "3301 West Burnsville Parkway, Burnsville, MN 55337",
+          "dock": "unknown",
+          "access_notes": "Not yet captured — outbound dock and door access is an open question on the current opportunity."
+        }
+      ],
+      "contacts": [
+        {
+          "name": "Eldon Nash",
+          "title": "Executive Vice President",
+          "phone": "952.736.2232",
+          "email": "EldNas@rigidhitch.com",
+          "role_type": "exec",
+          "last_contact": "2026-07-28",
+          "notes": "Reports to the Board. Signs off with a Mark Twain quote. Reached out unprompted in response to campaign outreach."
+        }
+      ],
+      "machines": [
+        { "make": "Haas", "model": "VF-4", "type": "CNC vertical mill", "status": "in_service" },
+        { "make": "HydMech", "model": "16A", "type": "horizontal bandsaw", "status": "in_service" },
+        { "make": "Amada", "model": "VT3850A", "type": "vertical bandsaw", "status": "in_service" },
+        { "make": "Piranha", "model": "90T Ironworker", "type": "ironworker", "status": "in_service" },
+        { "make": "Panasonic", "model": "Tawers Robotic Welding Cell", "type": "robotic welding cell", "status": "in_service", "notes": "Prep and disassembly on this unit is the main cost variable in any move." }
+      ],
+      "signals": [
+        {
+          "date": "2026-07-28",
+          "type": "relocation_study",
+          "source": "email reply to 'Anything coming up?' campaign",
+          "evidence": "I have just been approached by the Board to do a feasibility study of moving our entire manufacturing department off-site. As of now no new location has been selected. They want to know approximately how much it will cost to move all the equipment. For this exercise let's say we will be moving it less than 10 miles.",
+          "predicted_window": "Location undecided; budget number needed now for the study. Actual move likely 2-4 quarters out."
+        }
+      ],
+      "why_this_matters": "Highest-value job type R&R does, caught at the feasibility stage — whoever helps scope the study shapes the eventual bid. Also a full inventory of five named machines obtained for free, which becomes a Source Machinery target list the moment any of it gets replaced."
+    },
+    {
+      "id": "precision-air-products",
+      "name": "Precision Air Products",
+      "relationship": "customer",
+      "industry": "sheet metal fabrication / HVAC components",
+      "sites": [
+        { "address": "Burnsville, MN", "dock": "both", "access_notes": "Ground and dock at both locations — confirmed in work order." },
+        { "address": "Bloomington, MN", "dock": "both", "access_notes": "Ground and dock at both locations — confirmed in work order." }
+      ],
+      "contacts": [
+        { "name": "Tony Jaworski", "phone": "763.377.0449", "email": "ajaworski@precisionairproducts.com", "role_type": "decision_maker", "last_contact": "2026-07-28" }
+      ],
+      "machines": [
+        { "make": "Atlantic", "model": "HD Press Brake", "type": "press brake", "weight_lbs": 17100, "dimensions": "88x161x67", "status": "in_service" },
+        { "make": "Verson", "model": "Brake", "type": "press brake", "status": "in_service" }
+      ],
+      "movements": [
+        {
+          "date": "2026-07-28",
+          "direction": "internal",
+          "from_site": "Burnsville, MN",
+          "to_site": "Bloomington, MN",
+          "internal_price_quoted": 5000,
+          "price_note": "Brian: 'Looking at 5k with leveling'. Internal figure — delivery to customer unconfirmed.",
+          "prep_required": "leveling included in scope"
+        }
+      ],
+      "signals": [
+        {
+          "date": "2026-07-28",
+          "type": "capacity_change",
+          "source": "work order",
+          "evidence": "Moving two press brakes from Burnsville to Bloomington.",
+          "predicted_window": "A shop consolidating or relocating brake capacity often follows with additional equipment moves in the same 6-12 months."
+        }
+      ],
+      "why_this_matters": "Two press brakes is real capacity moving between sites. Worth knowing whether Bloomington is a new facility — if so, more equipment follows."
+    },
+    {
+      "id": "act-machinery",
+      "name": "ACT Machinery",
+      "relationship": "customer",
+      "industry": "machine tool dealer",
+      "sites": [
+        { "address": "2605 160th St W, Ste 114, Rosemount, MN 55068", "dock": "unknown", "access_notes": "Load-out onto customer's road truck." }
+      ],
+      "contacts": [
+        { "name": "Brian", "phone": "714.441.1992", "email": "brian@actmachinery.com", "role_type": "decision_maker", "last_contact": "2026-07-21" }
+      ],
+      "machines": [
+        { "make": "Star", "model": "SR 2913J2", "type": "CNC swiss lathe", "weight_lbs": 9040, "dimensions": "106x53x71", "status": "sold" },
+        { "make": "LNS or similar", "model": "Bar feeder", "type": "bar feeder", "weight_lbs": 2700, "dimensions": "186x40", "status": "sold" }
+      ],
+      "movements": [
+        {
+          "date": "2026-07-21",
+          "direction": "out",
+          "from_site": "Rosemount, MN",
+          "to_site": "customer road truck",
+          "internal_price_quoted": 2450,
+          "price_note": "Brian: 'Looking at 2450.00 to load out. Machine need to be prepped'. Approved by Molly and Brian in thread.",
+          "prep_required": "yes — machine required prep before crew arrival"
+        }
+      ],
+      "signals": [
+        {
+          "date": "2026-07-21",
+          "type": "selling_assets",
+          "source": "work order",
+          "evidence": "Machine tool dealer loading out a Star swiss lathe and bar feeder to a buyer's truck.",
+          "predicted_window": "Dealers move inventory continuously — recurring rigging revenue, and visibility into what's trading in the market."
+        }
+      ],
+      "why_this_matters": "A machine tool dealer is a repeating customer AND a market intelligence source: every load-out tells you what type of equipment is actually selling in the region. Note the quote took 5 days and Molly had to chase twice ('Customer called again') — a response-time problem worth fixing."
+    },
+    {
+      "id": "lakes-area-mfg",
+      "name": "Lakes Area Mfg.",
+      "relationship": "seller",
+      "industry": "precision machining",
+      "sites": [
+        { "address": "30410 Regal Ave, Shafer, MN 55074", "dock": "unknown" }
+      ],
+      "contacts": [
+        { "name": "Tim Banttari", "phone": "651-257-7121", "email": "tim@lakesareamfg.com", "role_type": "decision_maker", "last_contact": "2026-07-30" }
+      ],
+      "machines": [
+        { "make": "Hardinge", "model": "Cobra 65", "type": "CNC lathe", "status": "for_sale", "quantity": 2 },
+        { "make": "LNS", "model": "Quick Load servo bar feeder", "type": "bar feeder", "status": "for_sale", "quantity": 2 }
+      ],
+      "signals": [
+        {
+          "date": "2026-07-30",
+          "type": "selling_assets",
+          "source": "email reply to campaign",
+          "evidence": "We have two Hardinge Cobra 65's and two LNS Quick Load servo bar feeders we would like to sell.",
+          "predicted_window": "Immediate. Four machines available now."
+        }
+      ],
+      "why_this_matters": "Direct Source Machinery inventory opportunity — four named machines, one owner, one location. Cross-reference: Hydraulic Specialty is also selling two CNC machines through Brenda, so there is regional supply of CNC lathe capacity right now. Who is buying?"
+    },
+    {
+      "id": "clow-metalworks",
+      "name": "Clow Metalworks / Clow Stamping",
+      "relationship": "seller",
+      "industry": "metal stamping",
+      "sites": [
+        { "address": "Brainerd, MN area", "dock": "unknown", "access_notes": "Not yet visited." }
+      ],
+      "contacts": [
+        { "name": "Karen Miller", "email": "KMiller@clowmetalworks.com", "role_type": "purchasing", "last_contact": "2026-07-28" },
+        { "name": "Jeff Wohl", "title": "Facilities and Maintenance Manager", "role_type": "facilities", "notes": "Named as the on-site technical contact. Not yet contacted directly." },
+        { "name": "Reginal Clow", "email": "rclow@clowstamping.com", "role_type": "exec", "notes": "Original campaign recipient; forwarded internally to Karen." }
+      ],
+      "machines": [
+        { "model": "unspecified equipment lot", "status": "for_sale", "notes": "Brenda's assessment from photos: 'I think all of this equipment looks pretty rough.' Condition unverified in person." }
+      ],
+      "signals": [
+        {
+          "date": "2026-07-28",
+          "type": "selling_assets",
+          "source": "email reply to campaign, forwarded from exec to purchasing",
+          "evidence": "I would like to set up a time for you to come out and review the equipment we have for sale and make us an offer. I would have you meet with our facilities and maintenance manager, Jeff Wohl.",
+          "predicted_window": "Open invitation, awaiting scheduling."
+        }
+      ],
+      "why_this_matters": "An open invitation onto the floor is the highest-converting signal type. Even if the equipment is rough, the visit produces a full machine inventory and a relationship with the facilities manager — who knows every future move before anyone else does."
+    },
+    {
+      "id": "structural-wood",
+      "name": "Structural Wood Corporation",
+      "relationship": "customer",
+      "industry": "wood products manufacturing",
+      "contacts": [
+        { "name": "Jim Schumacher", "email": "jims@structural-wood.com", "role_type": "decision_maker", "last_contact": "2026-07-22", "notes": "Prefers mornings. Asked Brent to pick a day and never received one." },
+        { "name": "Vern", "email": "vern@structural-wood.com", "role_type": "unknown" },
+        { "name": "Kurt", "email": "kurt@structural-wood.com", "role_type": "unknown" }
+      ],
+      "signals": [
+        {
+          "date": "2026-07-22",
+          "type": "expansion",
+          "source": "email reply to campaign",
+          "evidence": "You have good timing, if you could stop by sometime in the near future I would like to talk to you about some work that I am fairly certain we will be doing here later this year.",
+          "predicted_window": "Work expected later in 2026. Customer described it as fairly certain."
+        }
+      ],
+      "why_this_matters": "Named future work, customer-initiated, with a standing invitation to visit. Went unanswered for 8 days — the exact failure mode this system exists to prevent."
+    },
+    {
+      "id": "atlas-games",
+      "name": "Atlas Games",
+      "relationship": "seller",
+      "industry": "publishing / light manufacturing",
+      "sites": [
+        { "address": "Proctor, MN (Duluth area)", "dock": "unknown" }
+      ],
+      "contacts": [
+        { "name": "John Nephew", "email": "john@atlas-games.com", "role_type": "decision_maker", "last_contact": "2026-07-30" }
+      ],
+      "machines": [
+        { "type": "plastic injection molding equipment", "status": "for_sale", "notes": "Purchased but reportedly never used by owner — potentially low-hour equipment." }
+      ],
+      "signals": [
+        {
+          "date": "2026-07-30",
+          "type": "selling_assets",
+          "source": "email reply to campaign",
+          "evidence": "we got set up to do some minor plastic injection molding, but our plans have changed, and I'd love to move out the equipment. We haven't used it ourselves.",
+          "predicted_window": "Immediate — owner motivated to clear space."
+        }
+      ],
+      "why_this_matters": "Unused equipment from a company that abandoned the plan is the best kind of acquisition: motivated seller, low hours, no sentimentality. Duluth is within R&R's working range."
+    },
+    {
+      "id": "hydraulic-specialty",
+      "name": "Hydraulic Specialty",
+      "relationship": "seller",
+      "contacts": [
+        { "name": "Tucker Dally", "email": "tdally@hydraulicspecialty.com", "role_type": "decision_maker", "last_contact": "2026-07-22" }
+      ],
+      "machines": [
+        { "type": "CNC machine", "status": "for_sale", "quantity": 2, "notes": "Already being handled by Brenda at Source Machinery." }
+      ],
+      "signals": [
+        {
+          "date": "2026-07-22",
+          "type": "selling_assets",
+          "source": "email reply to campaign",
+          "evidence": "We currently do not have anything in the works for moving around. I do have Brenda working on selling two of our CNC machines though.",
+          "predicted_window": "In progress via Source Machinery."
+        }
+      ],
+      "why_this_matters": "Shows the two sides of the business already touching the same account without a shared record. A single intelligence layer means Source Machinery and R&R stop discovering each other's accounts by accident."
+    }
+  ],
+  "cross_account_observations": [
+    {
+      "observation": "Regional CNC lathe supply is spiking right now",
+      "evidence": "Lakes Area Mfg selling 2x Hardinge Cobra 65 + 2 bar feeders; Hydraulic Specialty selling 2 CNC machines; ACT Machinery just loaded out a Star swiss lathe. All within a two-week window.",
+      "action": "Identify who in the book is expanding lathe capacity. Supply and demand are both visible in this data — nobody else can see both sides."
+    },
+    {
+      "observation": "Quote turnaround is a leak, not a capacity problem",
+      "evidence": "ACT Machinery quote took 5 days with two customer chase-ups from Molly. Precision Air Products was priced internally 2 days after request. Rigid Hitch was priced internally but the number never reached the customer.",
+      "action": "The bottleneck is not producing numbers — it is delivering them. Every priced-but-undelivered quote is finished work being thrown away."
+    },
+    {
+      "observation": "Campaign replies contain free machine inventories",
+      "evidence": "Rigid Hitch volunteered five named machines. Lakes Area volunteered four. Neither was asked for a list.",
+      "action": "Every campaign reply is an inventory disclosure. Capturing them builds the asset map at zero marginal cost."
+    }
+  ]
+}
