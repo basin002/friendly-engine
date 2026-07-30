@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lead Autopilot — Live Triage</title>
+<style>
+  :root {
+    --bg:#f2f0ea; --surface:#fbfaf6; --ink:#1e262c; --muted:#62707a;
+    --hairline:#d5d0c2; --accent:#a8672f; --accent-soft:#f3e7d8;
+    --hot:#b5302e; --hot-soft:#f7e2e0; --warm:#a8672f; --cool:#3f6a7a;
+    --good:#3f7a4f; --tag-bg:#ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14181b; --surface:#1b2124; --ink:#e7e4dc; --muted:#93a0a8;
+      --hairline:#303a3f; --accent:#e0a366; --accent-soft:#34281b;
+      --hot:#f08a86; --hot-soft:#3a1f1e; --warm:#e0a366; --cool:#8ab6c6;
+      --good:#6fbf82; --tag-bg:#20272b; }
+  }
+  :root[data-theme="dark"] { --bg:#14181b; --surface:#1b2124; --ink:#e7e4dc; --muted:#93a0a8;
+    --hairline:#303a3f; --accent:#e0a366; --accent-soft:#34281b;
+    --hot:#f08a86; --hot-soft:#3a1f1e; --warm:#e0a366; --cool:#8ab6c6;
+    --good:#6fbf82; --tag-bg:#20272b; }
+  :root[data-theme="light"] { --bg:#f2f0ea; --surface:#fbfaf6; --ink:#1e262c; --muted:#62707a;
+    --hairline:#d5d0c2; --accent:#a8672f; --accent-soft:#f3e7d8;
+    --hot:#b5302e; --hot-soft:#f7e2e0; --warm:#a8672f; --cool:#3f6a7a;
+    --good:#3f7a4f; --tag-bg:#ffffff; }
+
+  * { box-sizing:border-box; }
+  html,body { background:var(--bg); color:var(--ink); margin:0;
+    font-family:-apple-system,"Segoe UI",system-ui,sans-serif; }
+  body { max-width:900px; margin:0 auto; padding:40px 20px 70px; }
+
+  .eyebrow { font-family:ui-monospace,monospace; font-size:11.5px; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 8px; }
+  h1 { font-family:Georgia,"Iowan Old Style",serif; font-size:clamp(24px,4vw,32px); margin:0 0 8px; }
+  .lede { color:var(--muted); font-size:14.5px; line-height:1.55; max-width:62ch; margin:0 0 6px; }
+  .stamp { font-family:ui-monospace,monospace; font-size:11.5px; color:var(--muted); }
+  .live-badge { display:inline-flex; align-items:center; gap:6px; margin-top:14px;
+    font-family:ui-monospace,monospace; font-size:10.5px; letter-spacing:.07em; text-transform:uppercase;
+    background:var(--accent-soft); color:var(--accent); border:1px solid var(--accent);
+    padding:5px 12px; border-radius:999px; }
+
+  .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:32px 0 44px; }
+  @media (max-width:600px){ .kpis{ grid-template-columns:1fr 1fr; } }
+  .kpi { border:1px solid var(--hairline); background:var(--surface); border-radius:4px; padding:14px 15px; }
+  .kpi .n { font-family:Georgia,serif; font-size:27px; font-weight:700; font-variant-numeric:tabular-nums;
+    line-height:1.1; }
+  .kpi .l { font-size:11.5px; color:var(--muted); margin-top:3px; line-height:1.35; }
+  .kpi.hot .n { color:var(--hot); }
+  .kpi.warm .n { color:var(--warm); }
+
+  section { margin:44px 0; }
+  h2 { font-family:Georgia,serif; font-size:19px; margin:0 0 5px; }
+  .section-note { color:var(--muted); font-size:13.5px; line-height:1.5; margin:0 0 20px; max-width:64ch; }
+
+  .leads { display:flex; flex-direction:column; gap:14px; }
+  .lead { border:1px solid var(--hairline); background:var(--surface); border-radius:4px;
+    padding:17px 19px; border-left:3px solid var(--hairline); }
+  .lead.p1 { border-left-color:var(--hot); }
+  .lead.p2 { border-left-color:var(--warm); }
+  .lead.p3 { border-left-color:var(--cool); }
+
+  .lead-top { display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+    flex-wrap:wrap; margin-bottom:3px; }
+  .who { font-weight:700; font-size:15px; }
+  .who .co { font-weight:400; color:var(--muted); }
+  .when { font-family:ui-monospace,monospace; font-size:11px; color:var(--muted); white-space:nowrap; }
+  .subj { font-size:12.5px; color:var(--muted); font-style:italic; margin:0 0 9px; }
+
+  .said { border-left:2px solid var(--hairline); padding:8px 0 8px 12px; font-size:13.5px;
+    line-height:1.55; margin:0 0 11px; }
+  .said .q { color:var(--ink); }
+
+  .why { font-size:13px; line-height:1.55; padding:9px 12px; border-radius:3px;
+    background:var(--accent-soft); color:var(--ink); }
+  .why b { color:var(--accent); }
+
+  .chips { display:flex; gap:7px; flex-wrap:wrap; margin-top:10px; }
+  .chip { font-family:ui-monospace,monospace; font-size:10px; letter-spacing:.05em; text-transform:uppercase;
+    padding:3px 8px; border-radius:3px; border:1px solid var(--hairline); color:var(--muted);
+    background:var(--tag-bg); }
+  .chip.hot { color:var(--hot); border-color:var(--hot); background:var(--hot-soft); }
+  .chip.act { color:var(--accent); border-color:var(--accent); }
+  .chip.val { color:var(--good); border-color:var(--good); }
+
+  .diag { border:1px solid var(--hairline); background:var(--surface); border-radius:4px;
+    padding:20px 22px; }
+  .diag h3 { font-size:14.5px; margin:0 0 10px; }
+  .diag p { font-size:13.5px; line-height:1.6; color:var(--muted); margin:0 0 12px; }
+  .diag p:last-child { margin-bottom:0; }
+  .diag strong { color:var(--ink); }
+  .numbers { display:flex; gap:22px; flex-wrap:wrap; padding:14px 0; margin:6px 0 14px;
+    border-top:1px dashed var(--hairline); border-bottom:1px dashed var(--hairline); }
+  .numbers div { font-size:12.5px; color:var(--muted); }
+  .numbers b { display:block; font-family:Georgia,serif; font-size:21px; color:var(--ink);
+    font-variant-numeric:tabular-nums; }
+
+  .steps { counter-reset:s; list-style:none; padding:0; margin:0;
+    display:flex; flex-direction:column; gap:12px; }
+  .steps li { counter-increment:s; border:1px solid var(--hairline); background:var(--surface);
+    border-radius:4px; padding:15px 17px 15px 50px; position:relative; font-size:13.5px; line-height:1.55;
+    color:var(--muted); }
+  .steps li::before { content:counter(s); position:absolute; left:16px; top:15px;
+    font-family:ui-monospace,monospace; font-size:12px; font-weight:700; color:var(--accent);
+    border:1px solid var(--accent); border-radius:50%; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; }
+  .steps b { color:var(--ink); }
+  .steps code { font-family:ui-monospace,monospace; font-size:12px; background:var(--tag-bg);
+    border:1px solid var(--hairline); padding:1px 5px; border-radius:3px; color:var(--ink); }
+  .steps .done { color:var(--good); font-family:ui-monospace,monospace; font-size:10.5px;
+    letter-spacing:.05em; text-transform:uppercase; border:1px solid var(--good);
+    padding:2px 7px; border-radius:3px; margin-left:6px; white-space:nowrap; }
+
+  footer { margin-top:44px; padding-top:18px; border-top:1px solid var(--hairline);
+    font-size:12px; color:var(--muted); line-height:1.6; }
+</style>
+</head>
+<body>
+
+<p class="eyebrow">Cowork · live run</p>
+<h1>Lead Autopilot — this morning's triage</h1>
+<p class="lede">Built from your actual inbox, not a sample. Every name, date, and quote below was pulled from real threads in <span class="stamp">brent@rrmachinerymoving.com</span>.</p>
+<p class="stamp">Run: Thu Jul 30, 2026 · scanned inbox, last 5 days of activity</p>
+<span class="live-badge">● Live data — read-only scan, nothing sent</span>
+
+<div class="kpis">
+  <div class="kpi hot"><div class="n">4</div><div class="l">replies where the ball is in your court</div></div>
+  <div class="kpi warm"><div class="n">12d</div><div class="l">oldest unanswered hot lead</div></div>
+  <div class="kpi"><div class="n">6,793</div><div class="l">unread in inbox — why these get buried</div></div>
+  <div class="kpi"><div class="n">2</div><div class="l">quotes already priced internally, not yet sent out</div></div>
+</div>
+
+<section>
+  <h2>The real problem this found</h2>
+  <p class="section-note">It isn't that you need help writing quotes. It's that your outreach is <em>working</em> — and the replies are drowning.</p>
+  <div class="diag">
+    <h3>Your mail merges are landing. The responses aren't getting caught.</h3>
+    <div class="numbers">
+      <div><b>13,656</b>"Anything coming up?" threads sent</div>
+      <div><b>5,752</b>"Moved, Scrapped, or Hauled?" threads</div>
+      <div><b>6,793</b>unread sitting in inbox</div>
+    </div>
+    <p>You've sent tens of thousands of outreach emails across your YAMM campaigns. When a buyer replies, that reply lands in the same inbox as 6,793 unread newsletters, invoice reports, and calendar digests — with <strong>no label separating "a live human just raised their hand" from noise</strong>.</p>
+    <p>You already built labels for this — <strong>Needs Reply</strong>, <strong>Opportunities</strong>, <strong>LEADS</strong>, <strong>PROPOSALS / QUOTES</strong>. They're barely being applied, because applying them is manual. That's the exact gap an agent fills.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Live: 4 replies waiting on you right now</h2>
+  <p class="section-note">Ranked by how much money is on the table against how long they've been sitting. All four are real, all four are unanswered by you.</p>
+
+  <div class="leads">
+
+    <div class="lead p1">
+      <div class="lead-top">
+        <div class="who">Eldon Nash <span class="co">— Rigid Hitch</span></div>
+        <div class="when">Jul 28 · 2 days, no reply to him</div>
+      </div>
+      <p class="subj">RE: Anything coming up?</p>
+      <div class="said"><span class="q">"Timing is everything. I have just been approached by the Board to do a feasibility study of moving our <strong>entire manufacturing department</strong> off-site. As of now no new location has been selected."</span></div>
+      <div class="why"><b>Why this is #1:</b> An entire manufacturing department relocation is the biggest job type you do, and he's telling you he's at the <em>feasibility study</em> stage — meaning whoever helps scope it shapes the bid. Brian priced a piece of it at $5,000 internally on Jul 29, but that number went to you, not to Eldon. Nobody has replied to Eldon.</div>
+      <div class="chips"><span class="chip hot">Ball in your court</span><span class="chip val">Whole-plant move</span><span class="chip act">Priced internally, not sent</span></div>
+    </div>
+
+    <div class="lead p1">
+      <div class="lead-top">
+        <div class="who">Karen Miller <span class="co">— Clow Metalworks</span></div>
+        <div class="when">Jul 28 · 2 days, no reply to her</div>
+      </div>
+      <p class="subj">FW: Anything coming up?</p>
+      <div class="said"><span class="q">"I would like to set up a time for you to come out and review the equipment we have for sale and make us an offer. I would have you meet with our facilities and maintenance manager, Jeff Wohl."</span></div>
+      <div class="why"><b>Why this is hot:</b> She's asking you to come buy equipment — she named the contact and invited you on site. Internally Brian called it "a good find" and offered to swing by from Nisswa; Brenda thinks the equipment "looks pretty rough." That's a real internal decision to make — but Karen has heard nothing either way for two days, and a scheduling invite goes cold fast.</div>
+      <div class="chips"><span class="chip hot">Ball in your court</span><span class="chip val">Buy-side opportunity</span><span class="chip act">Needs a yes/no on the visit</span></div>
+    </div>
+
+    <div class="lead p2">
+      <div class="lead-top">
+        <div class="who">Tim Banttari <span class="co">— Lakes Area Mfg</span></div>
+        <div class="when">Today, 12:22 PM · unread</div>
+      </div>
+      <p class="subj">RE: [Ext] Anything coming up?</p>
+      <div class="said"><span class="q">"We have two Hardinge Cobra 65's and two LNS Quick Load servo bar feeders we would like to sell."</span></div>
+      <div class="why"><b>Why it matters:</b> Four specific, named, sellable machines — that's Source Machinery inventory, not just a rigging job. It came in a few hours ago and is still unread. Fastest win on this list: a same-day reply asking for photos, hours, and location while he's still thinking about it.</div>
+      <div class="chips"><span class="chip hot">Unread</span><span class="chip val">4 machines for sale</span><span class="chip act">Same-day reply wins it</span></div>
+    </div>
+
+    <div class="lead p3">
+      <div class="lead-top">
+        <div class="who">Joel Johnson <span class="co">— Bryant Graphics</span></div>
+        <div class="when">Jul 18 · 12 days quiet</div>
+      </div>
+      <p class="subj">Re: Anything coming up?</p>
+      <div class="said"><span class="q">You: "I can stop by and take a look on Monday before lunch. Does that work for you?" — Joel: <strong>"That works!"</strong></span></div>
+      <div class="why"><b>Why it's flagged:</b> He confirmed a site visit for Monday Jul 20 and the thread has been silent for 12 days. Either that visit happened and never got followed up with an offer, or it didn't happen and he's waiting. This is the classic quiet-death lead — he said yes, and yes is where it stopped.</div>
+      <div class="chips"><span class="chip">Confirmed visit, no follow-up</span><span class="chip act">Needs a status check</span></div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <h2>Also caught: two quotes priced but not delivered</h2>
+  <p class="section-note">Molly posts quote requests to the team; someone answers with a number internally. The agent noticed the number never left the building.</p>
+  <div class="leads">
+    <div class="lead p2">
+      <div class="lead-top">
+        <div class="who">Precision Air Products <span class="co">— Tony Jaworski</span></div>
+        <div class="when">Requested Jul 28 · priced Jul 30</div>
+      </div>
+      <p class="subj">Quote Needed — Atlantic HD Press Brake + Verson Brake, Burnsville → Bloomington</p>
+      <div class="why"><b>Status:</b> Brian priced it at <strong>"5k with leveling"</strong> — in a reply to Molly, on the internal thread. Worth confirming Tony actually received a quote.</div>
+      <div class="chips"><span class="chip act">Verify it went out</span></div>
+    </div>
+    <div class="lead p2">
+      <div class="lead-top">
+        <div class="who">TQL <span class="co">— James Buck</span></div>
+        <div class="when">Requested today · priced today</div>
+      </div>
+      <p class="subj">Quote Needed — engine load-out onto flatbed, Lakeville MN, 23,000 lbs</p>
+      <div class="why"><b>Status:</b> Rocky replied <strong>"$2500 ?"</strong> — with a question mark, internally. Nobody has confirmed the number or sent it to James.</div>
+      <div class="chips"><span class="chip act">Number unconfirmed</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Getting this running on its own</h2>
+  <p class="section-note">Everything above was produced by hand-running the scan once. Three steps make it happen every morning without you asking.</p>
+  <ol class="steps">
+    <li><b>Gmail connector</b> — already connected <span class="done">✓ done</span><br>That's how this page got built from real threads. It can read mail and create drafts; it cannot send on its own.</li>
+    <li><b>Teach it your rules once</b> — a saved skill.<br>What counts as a hot lead, which labels to apply (<code>Needs Reply</code>, <code>Opportunities</code>), how you word a first reply, and to always draft rather than send. Write it once; every future run obeys it.</li>
+    <li><b>Schedule it</b> — a recurring task, weekday mornings.<br>Each run: scan replies to your campaigns, apply labels, draft the replies, and hand you a page like this one. You review and hit send.</li>
+  </ol>
+</section>
+
+<footer>
+  Read-only scan. No emails were sent, no drafts created, and no labels changed in producing this page.
+  Internal pricing figures shown are quoted from your own team's threads, not calculated here — confirm before sending anything to a customer.
+</footer>
+</body>
+</html>
