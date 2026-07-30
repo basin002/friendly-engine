@@ -84,6 +84,74 @@ facilities manager after they change companies.
 | `last_contact` / `last_channel` | |
 | `notes` | personal context worth remembering |
 
+### Photo
+The most valuable and worst-captured asset in the business. Photos already arrive
+constantly as email attachments and die inside threads. Nothing is organized anywhere.
+
+**Photos are never stored in this repo.** Binary files bloat git permanently and can't be
+removed cleanly. They live in Google Drive, foldered `MachineIntel/{company-slug}/{machine-id}/`.
+The database stores only a pointer and the text extracted from the image.
+
+| Field | Notes |
+|---|---|
+| `drive_file_id` | the only copy reference — never duplicate the binary |
+| `machine_id` | nullable; a photo may arrive before the machine is identified |
+| `company_id` / `site_id` | always known, even when the machine isn't |
+| `captured_date` | from EXIF where available, else email date |
+| `source` | `customer_email`, `crew_phone`, `site_visit`, `actsoft_work_order`, `text_message` |
+| `photo_type` | see table below — this drives what gets extracted |
+| `extracted` | structured fields read out of the image by vision |
+| `confidence` | how sure the extraction is; low confidence gets flagged for a human |
+
+#### Photo types, and what each one unlocks
+
+Not all photos are equal. Type determines what to extract and what it's worth.
+
+| Type | What it unlocks |
+|---|---|
+| `nameplate` / data plate | **The highest-value photo there is.** Make, model, serial, year, voltage, phase, sometimes weight and hours — read straight off the plate. The serial is the only truly unique key a machine has. |
+| `full_machine` | Condition assessment, and a ready-to-publish Source Machinery listing photo. No reshoot needed. |
+| `control_panel` | Control make and generation, which moves resale value substantially on the same base machine. |
+| `access_path` / `dock_door` / `doorway` | Re-quote that site forever without another visit. Access is the main cost driver and it rarely changes. |
+| `in_place` / `rigged` | How the machine was rigged last time — faster, safer, and cheaper the next time, and defensible if anything goes wrong. |
+| `damage` / `wear` | Condition of record at a point in time. Protects against disputes and informs honest resale pricing. |
+
+#### Why the nameplate photo is the whole game: provenance
+
+Serial numbers make machines individually trackable across owners. Once serials are in the
+record, questions become answerable that nobody else in this market can answer:
+
+- *We moved this exact machine in 2019 — here's what condition it was in and how it was rigged.*
+- *This machine has changed hands twice in six years. Why?*
+- *This model consistently gets replaced at year eight in this industry. Who bought one in 2018?*
+
+Used machinery is sold on trust and unknowns. A dealer who can produce the documented life
+history of a specific serial number is not competing on price. Note the Artiforge thread
+from March, where the customer said their own machine documentation "isn't great, all I have
+at the moment are their footprints" — **customers do not have this information about their
+own equipment.** Whoever holds it holds the relationship.
+
+#### How photos get captured
+
+| Path | Status | Approach |
+|---|---|---|
+| Inbound customer photos | Already arriving, unorganized | The morning routine already reads the mail. Extend it: when a thread is about equipment and carries image attachments, file them to the company's Drive folder and log them. |
+| Crew photos on site | **The real gap** | Needs a deliberate capture path — either Actsoft's field app if it stores job photos, or a dedicated drop address / shared Drive folder crew send to from the truck. |
+| Site visit photos | Ad hoc, on phones | Phone auto-upload into a shared Drive folder, sorted afterward by company and date. |
+| Historical Actsoft photos | Unknown, potentially large | Ask Actsoft directly — see below. |
+
+**Add this to the Actsoft conversation.** When requesting the CSV export, also ask: does the
+field app capture photos against work orders, and can those be exported or reached by API? If
+crews have been photographing jobs in Actsoft for years, that is a historical image library
+worth more than the order data itself — and it would arrive already tied to a work order,
+a date, and a customer.
+
+**Known access limitation:** the Gmail connection available to these agents exposes attachment
+*metadata* but not attachment *contents*. So photo capture cannot be fully automated from
+Gmail alone as things stand. Two workable routes: a Gmail filter or Apps Script that
+auto-saves qualifying attachments to Drive (after which agents can read them), or pulling
+from Actsoft if the photos are already there. Confirm which before building the pipeline.
+
 ### Signal
 The intelligence layer — anything that predicts a future job.
 
