@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pipeline × Rigging Intelligence — Aug 3, 2026</title>
+<style>
+:root {
+  color-scheme: light;
+  --paper: #f4f4f1;
+  --surface: #fcfcfb;
+  --surface-2: #efefec;
+  --ink: #16171a;
+  --ink-2: #52514e;
+  --ink-3: #898781;
+  --hairline: #e1e0d9;
+  --border: rgba(11,11,11,0.10);
+  --accent: #2a78d6;
+  --accent-ink: #1c5cab;
+  --live: #104281;      /* ordinal step 650 */
+  --lapsed: #2a78d6;    /* ordinal step 450 */
+  --dead: #86b6ef;      /* ordinal step 250 */
+  --good: #0ca30c;
+  --good-text: #006300;
+  --warn: #b97506;
+  --serious: #b04716;
+  --serious-chip: #ec835a;
+  --critical: #d03b3b;
+  --grid: #e1e0d9;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --paper: #121311;
+    --surface: #1a1a19;
+    --surface-2: #222321;
+    --ink: #f4f4ef;
+    --ink-2: #c3c2b7;
+    --ink-3: #898781;
+    --hairline: #2c2c2a;
+    --border: rgba(255,255,255,0.10);
+    --accent: #3987e5;
+    --accent-ink: #6da7ec;
+    --live: #86b6ef;
+    --lapsed: #3987e5;
+    --dead: #184f95;
+    --good: #0ca30c;
+    --good-text: #0ca30c;
+    --warn: #fab219;
+    --serious: #ec835a;
+    --serious-chip: #ec835a;
+    --critical: #e66767;
+    --grid: #2c2c2a;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #121311;
+  --surface: #1a1a19;
+  --surface-2: #222321;
+  --ink: #f4f4ef;
+  --ink-2: #c3c2b7;
+  --ink-3: #898781;
+  --hairline: #2c2c2a;
+  --border: rgba(255,255,255,0.10);
+  --accent: #3987e5;
+  --accent-ink: #6da7ec;
+  --live: #86b6ef;
+  --lapsed: #3987e5;
+  --dead: #184f95;
+  --good: #0ca30c;
+  --good-text: #0ca30c;
+  --warn: #fab219;
+  --serious: #ec835a;
+  --serious-chip: #ec835a;
+  --critical: #e66767;
+  --grid: #2c2c2a;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f4f4f1;
+  --surface: #fcfcfb;
+  --surface-2: #efefec;
+  --ink: #16171a;
+  --ink-2: #52514e;
+  --ink-3: #898781;
+  --hairline: #e1e0d9;
+  --border: rgba(11,11,11,0.10);
+  --accent: #2a78d6;
+  --accent-ink: #1c5cab;
+  --live: #104281;
+  --lapsed: #2a78d6;
+  --dead: #86b6ef;
+  --good: #0ca30c;
+  --good-text: #006300;
+  --warn: #b97506;
+  --serious: #b04716;
+  --serious-chip: #ec835a;
+  --critical: #d03b3b;
+  --grid: #e1e0d9;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.wrap { max-width: 1080px; margin: 0 auto; padding: 28px 20px 80px; display: flex; flex-direction: column; gap: 28px; }
+.eyebrow { font-size: 11.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-ink); }
+header .eyebrow { margin-bottom: 6px; }
+h1 { font-size: clamp(24px, 4vw, 34px); line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.015em; text-wrap: balance; }
+.sub { color: var(--ink-2); max-width: 66ch; margin: 0; }
+.stamp { margin-top: 10px; font-size: 12.5px; color: var(--ink-3); }
+h2 { font-size: 19px; margin: 0; letter-spacing: -0.01em; }
+h3 { font-size: 15.5px; margin: 0; }
+section { display: flex; flex-direction: column; gap: 14px; }
+.sechead { display: flex; flex-direction: column; gap: 3px; border-top: 2px solid var(--ink); padding-top: 12px; }
+.sechead p { margin: 2px 0 0; color: var(--ink-2); max-width: 76ch; }
+.banner {
+  background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--serious-chip);
+  border-radius: 8px; padding: 14px 18px; display: flex; gap: 12px; align-items: flex-start;
+}
+.banner b { display: block; margin-bottom: 2px; }
+.banner p { margin: 0; color: var(--ink-2); font-size: 14px; max-width: 90ch; }
+.banner .ic { flex: none; margin-top: 1px; font-weight: 800; color: var(--serious); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px 14px; }
+.tile .k { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+.tile .v { font-size: 30px; font-weight: 750; letter-spacing: -0.02em; margin: 4px 0 2px; }
+.tile .d { font-size: 13px; color: var(--ink-2); }
+.tile .v.bad { color: var(--critical); }
+.tile .v.ok { color: var(--good-text); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); margin-bottom: 6px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.chart-note { font-size: 12.5px; color: var(--ink-3); margin-top: 8px; }
+#repchart { width: 100%; }
+.callout {
+  border-left: 4px solid var(--accent); background: var(--surface); border-radius: 8px;
+  border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  padding: 14px 18px; color: var(--ink); font-size: 15.5px;
+}
+.callout b { font-weight: 750; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  border: 1px solid var(--border); background: var(--surface); color: var(--ink-2);
+  border-radius: 999px; padding: 5px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.chip:hover { border-color: var(--accent); color: var(--ink); }
+.chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+:root[data-theme="dark"] .chip.on, :root:not([data-theme="light"]) .chip.on { color: #fff; }
+.chip:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+th { text-align: left; font-size: 11px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; padding: 10px 12px; border-bottom: 1px solid var(--hairline); white-space: nowrap; }
+td { padding: 9px 12px; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.acct { font-weight: 650; }
+td .opp { display: block; font-weight: 400; color: var(--ink-3); font-size: 12px; max-width: 34ch; }
+.pill { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+.pill.live { background: color-mix(in srgb, var(--good) 14%, transparent); color: var(--good-text); }
+.pill.lapsed { background: color-mix(in srgb, var(--serious-chip) 16%, transparent); color: var(--serious); }
+.pill.dead { background: color-mix(in srgb, var(--critical) 13%, transparent); color: var(--critical); }
+.pill.stage { background: var(--surface-2); color: var(--ink-2); font-weight: 600; letter-spacing: 0.02em; }
+.cards2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.lead { display: flex; flex-direction: column; gap: 8px; }
+.lead .top { display: flex; justify-content: space-between; gap: 6px 10px; align-items: baseline; flex-wrap: wrap; }
+.lead .sig { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-ink); white-space: nowrap; }
+.lead blockquote { margin: 0; padding: 8px 12px; border-left: 3px solid var(--hairline); color: var(--ink-2); font-size: 13.5px; font-style: italic; }
+.lead .play { font-size: 13.5px; }
+.lead .play b { color: var(--ink); }
+.lead .meta { font-size: 12.5px; color: var(--ink-3); }
+.repcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.repcard h3 { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.repcard h3 .stat { font-size: 12.5px; font-weight: 600; color: var(--ink-3); white-space: nowrap; }
+.repcard ul { margin: 8px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 13.5px; display: flex; flex-direction: column; gap: 6px; }
+.repcard li b { color: var(--ink); font-weight: 650; }
+.matches { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.match .h { font-weight: 700; margin-bottom: 6px; }
+.match p { margin: 0 0 6px; font-size: 13.5px; color: var(--ink-2); }
+.match p b { color: var(--ink); }
+.tip {
+  position: fixed; pointer-events: none; z-index: 10; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px; font-size: 12.5px; box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  opacity: 0; transition: opacity 0.08s;
+}
+.tip b { display: block; font-size: 13px; }
+.tip .row { display: flex; justify-content: space-between; gap: 16px; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+footer { border-top: 1px solid var(--hairline); padding-top: 16px; font-size: 12.5px; color: var(--ink-3); }
+footer p { margin: 0 0 6px; max-width: 90ch; }
+@media (prefers-reduced-motion: reduce) { .tip { transition: none; } }
+@media print { .chips { display: none; } body { background: #fff; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">R&amp;R Rigging × Source Machinery · Sales Intelligence</div>
+  <h1>Where the reps should spend their time</h1>
+  <p class="sub">Salesforce machine-tool pipeline cross-referenced against rigging work-order intelligence. Built for Brent &amp; Brian's coverage review: what to close, what to rescue, what to scrub, and the accounts the rigging side already handed us.</p>
+  <div class="stamp">Pipeline export: Aug 3, 2026 · 137 open opportunities · Rigging intel: work orders &amp; campaign replies through Jul 30, 2026</div>
+</header>
+
+<div class="banner">
+  <span class="ic">▲</span>
+  <div>
+    <b>The historical work-order export failed.</b>
+    <p>The uploaded work-order report contains only "An error occurred while exporting your data" — Salesforce/Actsoft never produced the file. This build cross-references the 8 accounts already captured in <code>intel/accounts-seed.json</code> (hand-extracted from real work orders and campaign replies, Jul 16–30). Re-run the export as CSV and the full multi-year rigging history drops straight into this dashboard.</p>
+  </div>
+</div>
+
+<section>
+  <div class="tiles" id="tiles"></div>
+  <div class="callout" id="headline"></div>
+</section>
+
+<section>
+  <div class="sechead">
+    <div class="eyebrow">Pipeline health</div>
+    <h2>Dollar value by rep — how much of each book is actually alive</h2>
+    <p>A deal is <b>live</b> if its close date hasn't passed, <b>lapsed</b> if the close date slipped within the last year, and <b>dormant</b> if it's more than a year past. Lapsed ≠ lost — most just need a real date and a touch — but nobody can manage a forecast where nine of every ten dollars are behind their own close dates.</p>
+  </div>
+  <div class="card">
+    <div class="legend" id="legend"></div>
+    <div id="repchart"></div>
+    <div class="chart-note">Bars show open-opportunity dollars per rep (9 deals with no amount excluded from bars, included in counts). Hover a segment for detail.</div>
+  </div>
+</section>
+
+<section>
+  <div class="sechead">
+    <div class="eyebrow">Action plan · Tier 1</div>
+    <h2>Close list — live deals at 50%+ probability</h2>
+    <p>These are the only deals in the entire book that are both current and better than a coin flip. Every one of them should have a meeting on the calendar this month, and every machine order here is also an R&amp;R install/rigging quote — attach it before the customer calls someone else to unload the truck.</p>
+  </div>
+  <div class="tablewrap"><table id="t1"></table></div>
+</section>
+
+<section>
+  <div class="sechead">
+    <div class="eyebrow">Action plan · Tier 2</div>
+    <h2>Rescue list — high-probability deals that slipped past their close date</h2>
+    <p>50%+ probability, $100k+, lapsed less than ~9 months. This is where the fastest money in the book is hiding: deals the reps already did the work on that just went quiet. First touch is a date-verification call — is it still real, and when. If it's dead, kill it honestly so the forecast means something.</p>
+  </div>
+  <div class="tablewrap"><table id="t2"></table></div>
+</section>
+
+<section>
+  <div class="sechead">
+    <div class="eyebrow">Action plan · Tier 3</div>
+    <h2>Rigging-intel lead list — accounts the work orders handed us</h2>
+    <p>None of these accounts appear anywhere in the machine-tool pipeline. Every one came from a real work order or a reply to the "anything coming up?" campaign in the last three weeks — warm, documented, and time-boxed. This is the whitespace Brent &amp; Brian should be assigning in the coverage meeting.</p>
+  </div>
+  <div class="cards2" id="leads"></div>
+</section>
+
+<section>
+  <div class="sechead">
+    <div class="eyebrow">Cross-market intelligence</div>
+    <h2>Supply meets demand — matches only we can see</h2>
+    <p>The rigging side sees who's selling and moving iron; the pipeline shows who's shopping. Put them together and you get plays neither team finds alone.</p>
+  </div>
+  <div class="matches" id="matches"></div>
+</section>
+
+<section>
+  <div class="sechead">
+    <div class="eyebrow">Coverage review</div>
+    <h2>Marching orders by rep</h2>
+  </div>
+  <div class="repcards" id="repcards"></div>
+</section>
+
+<section>
+  <div class="sechead">
+    <div class="eyebrow">Drill-down</div>
+    <h2>Full pipeline — every open opportunity</h2>
+    <p>Filter by rep and status. Sorted by weighted value (amount × probability).</p>
+  </div>
+  <div class="chips" id="repfilter" role="group" aria-label="Filter by rep"></div>
+  <div class="chips" id="statusfilter" role="group" aria-label="Filter by status"></div>
+  <div class="tablewrap"><table id="full"></table></div>
+</section>
+
+<footer>
+  <p><b>Sources:</b> Salesforce "Pipeline by Rep &amp; Stage" export 2026-08-03 (committed at <code>pipeline-intel/data/</code>) · <code>intel/accounts-seed.json</code> rigging extraction 2026-07-30.</p>
+  <p><b>Next data steps:</b> (1) Re-run the failed work-order report export — request CSV, not PDF. (2) Ask Actsoft for the OrderDetailsReport as CSV; the daily Rigging_invoices.csv proves they can. Multi-year history unlocks the replacement-cycle and repeat-account views this page is built to hold.</p>
+</footer>
+
+</div>
+<div class="tip" id="tip" aria-hidden="true"></div>
+
+<script>
+const DATA = [{"account":"BOBALEE HYDRAULICS","opp":"Enshu GE480H","amount":280000.0,"prob":50.0,"close":"3/18/2021","days_past_close":1964,"owner":"Colin Bergs","stage":"Create Quote","next_step":""},{"account":"ELECTRIC MACHINERY COMPANY LLC","opp":"electric machine company Droop &Rein","amount":6000000.0,"prob":50.0,"close":"1/31/2024","days_past_close":915,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"CapX"},{"account":"BOWE MACHINE, INC","opp":"Bowe - 20x40 Vertical - Company buyout","amount":500000.0,"prob":10.0,"close":"8/31/2023","days_past_close":1068,"owner":"Richard Kappelhoff","stage":"Call","next_step":"Call - Set Appointment"},{"account":"HORNADY MANUFACTURING","opp":"Hornady - Hanwha XDI32 - Tornos Replacement","amount":400000.0,"prob":50.0,"close":"6/30/2023","days_past_close":1130,"owner":"Colin Bergs","stage":"Create Quote","next_step":"Acquire tooling and material for test cuts."},{"account":"Tenneco","opp":"Tenneco - Takamaz J-Wave - Spark plugs","amount":150000.0,"prob":25.0,"close":"6/30/2023","days_past_close":1130,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Internal testing information requested"},{"account":"BOBALEE HYDRAULICS","opp":"Bobalee - Enshu 500mm - Machine Replacement","amount":400000.0,"prob":50.0,"close":"1/31/2024","days_past_close":915,"owner":"Colin Bergs","stage":"Create Quote","next_step":"Machine Demo - Open house visit"},{"account":"ZERMATT TOOL INC.","opp":"Zermatt - Bumotech s191H - 2011 Pistol Slides","amount":500000.0,"prob":25.0,"close":"9/15/2023","days_past_close":1053,"owner":"Colin Bergs","stage":"Discovery","next_step":"Get Drawings"},{"account":"ZERMATT TOOL INC.","opp":"Zermatt - Axisco Broach - Gun Parts","amount":250000.0,"prob":25.0,"close":"9/15/2023","days_past_close":1053,"owner":"Colin Bergs","stage":"Discovery","next_step":"Get Drawings"},{"account":"Capps Manufacturing Inc","opp":"Capps - Small Vertical - Production for SST","amount":120000.0,"prob":50.0,"close":"5/31/2023","days_past_close":1160,"owner":"Colin Bergs","stage":"Create Quote","next_step":"Quote"},{"account":"Capps Manufacturing Inc","opp":"Capps - Sharp Knee Mill - Tool Room","amount":20000.0,"prob":50.0,"close":"5/31/2023","days_past_close":1160,"owner":"Colin Bergs","stage":"Create Quote","next_step":"Quote"},{"account":"MPI / MANUFACTURING PARTNERS, INC.","opp":"Weldon grinder / AGN4 / MPI","amount":175000.0,"prob":75.0,"close":"12/31/2025","days_past_close":215,"owner":"Tracey Anderson","stage":"Negotiation","next_step":"PO"},{"account":"MID-CITY PRECISION, INC.","opp":"Hyundai Wia /  HD2600 / mid-city precision","amount":400000.0,"prob":25.0,"close":"4/30/2025","days_past_close":460,"owner":"Tracey Anderson","stage":"Discovery","next_step":"find machine"},{"account":"Lewis Machine & Tool Co","opp":"LMT - Enshu GE580 - Gun Parts","amount":350000.0,"prob":25.0,"close":"9/29/2023","days_past_close":1039,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Request part drawings"},{"account":"J A Max Machine Co.","opp":"J A Max - Hanwha XE20- H - Production","amount":174900.0,"prob":75.0,"close":"7/28/2023","days_past_close":1102,"owner":"Colin Bergs","stage":"Negotiation","next_step":"Negotiate Pricing"},{"account":"VIKING DRILL & TOOL, INC.","opp":"MAR/ c500 / Viking Drill","amount":326000.0,"prob":50.0,"close":"12/16/2025","days_past_close":230,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Contact Fanuc Automation"},{"account":"CONTINENTAL HYDRAULICS INCORPORATED","opp":"Spinner TC400","amount":210000.0,"prob":50.0,"close":"12/18/2023","days_past_close":959,"owner":"Doug Fink","stage":"Create Quote","next_step":""},{"account":"MERIT GAGE, INC.","opp":"Supertec G32A-50CNC - Angular Type Grinder","amount":88990.0,"prob":50.0,"close":"4/30/2025","days_past_close":460,"owner":"Tracey Anderson","stage":"Create Quote","next_step":""},{"account":"WINDINGS, INC.","opp":"Supertec G32P-60NC","amount":95000.0,"prob":50.0,"close":"1/8/2024","days_past_close":938,"owner":"Doug Fink","stage":"Create Quote","next_step":""},{"account":"DRAMCO TOOL & DIE COMPANY","opp":"YCM / JC10+ / Dramco / Expansion","amount":130000.0,"prob":25.0,"close":"12/31/2024","days_past_close":580,"owner":"Colin Bergs","stage":"Discovery","next_step":"Sign PO"},{"account":"DRAMCO TOOL & DIE COMPANY","opp":"YCM / JC13 / Dramco / Expansion","amount":190000.0,"prob":25.0,"close":"12/31/2024","days_past_close":580,"owner":"Colin Bergs","stage":"Discovery","next_step":"Sign PO"},{"account":"Lewis Machine & Tool Co","opp":"LMT - Spinner TTY2 - NDA Parts","amount":350000.0,"prob":50.0,"close":"12/29/2023","days_past_close":948,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Regain traction post Hales"},{"account":"MIDWEST PRO MANUFACTURING, INC","opp":"Midwest - Cosen - Auto Bundle Cutting","amount":45000.0,"prob":50.0,"close":"11/30/2023","days_past_close":977,"owner":"Colin Bergs","stage":"Create Quote","next_step":"Quote"},{"account":"BENSON MACHINE WORKS","opp":"Benson - 8\" SY - Job Shop","amount":150000.0,"prob":50.0,"close":"12/29/2023","days_past_close":948,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Find a machine in the $150k range"},{"account":"Groschopp, Inc.","opp":"Groschopp -YCM JC6P","amount":250000.0,"prob":25.0,"close":"3/29/2024","days_past_close":857,"owner":"Colin Bergs","stage":"Discovery","next_step":"Follow up with Roy post budget planning for 2024"},{"account":"BRAND HYDRAULICS","opp":"Brand Hydraulics - Lathe Cell - Spool Valves","amount":500000.0,"prob":10.0,"close":"6/28/2024","days_past_close":766,"owner":"Richard Kappelhoff","stage":"Call","next_step":"Call Emmit for specs"},{"account":"MIDWEST PRO MANUFACTURING, INC","opp":"Midwest - TT - Pins and Shafts","amount":300000.0,"prob":25.0,"close":"11/30/2023","days_past_close":977,"owner":"Colin Bergs","stage":"Discovery","next_step":"Send drawings off for time study"},{"account":"DRAMCO TOOL & DIE COMPANY","opp":"YCM / DDX / Dramco / Large 5 Axis","amount":850000.0,"prob":50.0,"close":"3/28/2025","days_past_close":493,"owner":"Colin Bergs","stage":"Create Quote","next_step":"Collect Information for Spec"},{"account":"BENSON MACHINE WORKS","opp":"Benson - Cosen 510 - Dual Angle Miter","amount":65000.0,"prob":50.0,"close":"4/30/2024","days_past_close":825,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Quote"},{"account":"K&S","opp":"K&S - jC10+","amount":150000.0,"prob":50.0,"close":"3/29/2024","days_past_close":857,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Review quotes with customer"},{"account":"TQL (Total Quality Logistics","opp":"TQL - Warehousing/storage for a flooring company","amount":10000.0,"prob":50.0,"close":"1/1/2024","days_past_close":945,"owner":"Brent Basinski","stage":"Create Quote","next_step":""},{"account":"DYERSVILLE DIE CAST","opp":"Dyersville Die Cast - YCM JC6P","amount":200000.0,"prob":25.0,"close":"1/31/2024","days_past_close":915,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Find suitable machine with enough torque with HS capability"},{"account":"Emerson Process Management","opp":"Emerson - 2axis lathe - Training Center","amount":70000.0,"prob":50.0,"close":"12/11/2023","days_past_close":966,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Find machine"},{"account":"Kayla Enterprises","opp":"Wysong / 6' break / Kayla Enterprises","amount":null,"prob":50.0,"close":"3/28/2025","days_past_close":493,"owner":"Doug Fink","stage":"Create Quote","next_step":"have Colton make intro to Ricky"},{"account":"MILL CREEK MACHINING, INC.","opp":"Mill Creek - present line card for new machine tool order","amount":null,"prob":10.0,"close":"12/18/2023","days_past_close":959,"owner":"Colin Bergs","stage":"Call","next_step":"call Nick, HE ASKED FOR A SALES REP TO CALL AND PRESENT A LINE CARD AS THEY ARE LOOKING TO MAKE A PURCHASE IN 2024"},{"account":"Speedway Motors","opp":"Speedway Motors - Cosen C260NC - Replace old saw","amount":35000.0,"prob":75.0,"close":"12/29/2023","days_past_close":948,"owner":"Brent Basinski","stage":"Negotiation","next_step":"Overcome obstructions"},{"account":"True Posistion Manufacturing Inc","opp":"True Position - YCM jC6P","amount":175000.0,"prob":50.0,"close":"3/29/2024","days_past_close":857,"owner":"Brent Basinski","stage":"Create Quote","next_step":"Put package together"},{"account":"True Posistion Manufacturing Inc","opp":"True Position - Sharp Lathe - Job Shop","amount":30000.0,"prob":50.0,"close":"3/29/2024","days_past_close":857,"owner":"Brent Basinski","stage":"Create Quote","next_step":"Create Quote"},{"account":"X-Stream Waterjetting LLC","opp":"Wysong / press break/ X-Stream","amount":null,"prob":25.0,"close":"9/30/2025","days_past_close":307,"owner":"Tracey Anderson","stage":"Discovery","next_step":"look for 6' brake press"},{"account":"AMERICAN MACHINE WORK, INC.","opp":"American Machine Works - Budget Overlook","amount":null,"prob":25.0,"close":"10/1/2024","days_past_close":671,"owner":"Brent Basinski","stage":"Discovery","next_step":""},{"account":"Engineered Production Equipment, Inc","opp":"Engineered Production Equipment","amount":null,"prob":25.0,"close":"10/4/2024","days_past_close":668,"owner":"Brent Basinski","stage":"Discovery","next_step":""},{"account":"AGCO CORP.","opp":"AGCO Hec 800","amount":1700000.0,"prob":75.0,"close":"3/28/2025","days_past_close":493,"owner":"Doug Fink","stage":"Quote Approved","next_step":"Project has been moved from '24 to '25"},{"account":"SUPERIOR MACHINE INC.","opp":"YCM Project - Superior - Replace Supermax","amount":80000.0,"prob":25.0,"close":"4/28/2025","days_past_close":462,"owner":"Doug Fink","stage":"Discovery","next_step":"Follow up Required - Site Visit"},{"account":"Quality Docks, DBA Tonka built, LLC","opp":"Cosen 320nc / Tonka Built/","amount":40000.0,"prob":25.0,"close":"12/31/2024","days_past_close":580,"owner":"Doug Fink","stage":"Discovery","next_step":""},{"account":"Borning, Industries, LLC","opp":"Wysong / laser /  Borning Industries","amount":75000.0,"prob":25.0,"close":"11/27/2025","days_past_close":249,"owner":"Tracey Anderson","stage":"Discovery","next_step":"Call in a week"},{"account":"HANSON SILO COMPANY","opp":"Senfeng / P3 or P4 Fiber with and automation","amount":1200000.0,"prob":50.0,"close":"4/30/2025","days_past_close":460,"owner":"Doug Fink","stage":"Create Quote","next_step":""},{"account":"ELECTRIC MACHINERY COMPANY LLC","opp":"Electric Machine/ Wysong 12-250 break","amount":170000.0,"prob":25.0,"close":"9/27/2024","days_past_close":675,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":""},{"account":"ELECTRIC MACHINERY COMPANY LLC","opp":"Electric machine / Wysong Laser","amount":600000.0,"prob":25.0,"close":"8/30/2024","days_past_close":703,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":""},{"account":"CLARUS, INC.","opp":"TAJMAC / multispindle / Clarus","amount":185000.0,"prob":50.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Star Project"},{"account":"SUPERIOR AEROSPACE","opp":"Hyundai Wia LF2600 - Superior Aero - Valves","amount":175000.0,"prob":50.0,"close":"12/23/2025","days_past_close":223,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":""},{"account":"Mytana (EDGEWOOD MACHINE, INC.)","opp":"Hyundai Wia /  E160 A /  Mytana","amount":120000.0,"prob":75.0,"close":"3/31/2026","days_past_close":125,"owner":"Richard Kappelhoff","stage":"Negotiation","next_step":"Corporate review"},{"account":"HSI Manufacturing","opp":"Wysong MS Press Brake/HSI Mfg.","amount":123750.0,"prob":50.0,"close":"10/31/2025","days_past_close":276,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"Call in a week"},{"account":"OXBO INTERNATIONAL","opp":"YCM /C10-JC10/ OXBO","amount":null,"prob":25.0,"close":"4/30/2025","days_past_close":460,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"visit them"},{"account":"VON RUDEN MFG. INC.","opp":"Spinner PD/Von Ruden","amount":300000.0,"prob":25.0,"close":"9/30/2025","days_past_close":307,"owner":"Tracey Anderson","stage":"Discovery","next_step":"Proving the process"},{"account":"Anderson Metal Fabricating","opp":"MVD F6/Anderson Metal","amount":521750.0,"prob":50.0,"close":"2/28/2026","days_past_close":156,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"Get numbers for used Trumpf"},{"account":"COMMAND TOOLING SYSTEMS","opp":"HW, HD2600 Hard turning lathe Command tooling","amount":200000.0,"prob":75.0,"close":"12/25/2024","days_past_close":586,"owner":"Doug Fink","stage":"Negotiation","next_step":"final accessories"},{"account":"Metal Pro Machine","opp":"Senfeng Engraver","amount":15000.0,"prob":25.0,"close":"9/30/2025","days_past_close":307,"owner":"Tracey Anderson","stage":"Discovery","next_step":"Discovery on if still a valid opportunity for the new items he is making"},{"account":"Wivco Design","opp":"YCM  / C7 or C10 / Wivco","amount":118000.0,"prob":50.0,"close":"12/31/2025","days_past_close":215,"owner":"Doug Fink","stage":"Create Quote","next_step":""},{"account":"INTEGER","opp":"Hanwha/XD10","amount":150000.0,"prob":25.0,"close":"9/30/2025","days_past_close":307,"owner":"Tracey Anderson","stage":"Discovery","next_step":"Proving the process"},{"account":"SWANSTROM TOOLS, USA","opp":"HW / HMC /","amount":45000.0,"prob":25.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"visit them"},{"account":"Nyhus Enterprises","opp":"fixtruring","amount":180000.0,"prob":25.0,"close":"4/23/2025","days_past_close":467,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"visit them"},{"account":"Quality Docks, DBA Tonka built, LLC","opp":"Senfeng SF6016T Tonka Built","amount":150000.0,"prob":50.0,"close":"12/31/2024","days_past_close":580,"owner":"Doug Fink","stage":"Create Quote","next_step":""},{"account":"UMC, Inc","opp":"SpinnerMicroTurn/UMC","amount":415800.0,"prob":25.0,"close":"10/31/2025","days_past_close":276,"owner":"Tracey Anderson","stage":"Discovery","next_step":"Set up an appointment"},{"account":"C-AXIS, INC","opp":"Spinner/C-Axis","amount":415800.0,"prob":25.0,"close":"9/30/2025","days_past_close":307,"owner":"Tracey Anderson","stage":"Discovery","next_step":"Call in a week"},{"account":"CB QUALITY MACHINE & ENGINEERING, INC.","opp":"Supertech/CB Quality","amount":150000.0,"prob":25.0,"close":"10/31/2025","days_past_close":276,"owner":"Tracey Anderson","stage":"Discovery","next_step":"Call in a week"},{"account":"LISI Medical","opp":"RealMeca/Lisi","amount":415800.0,"prob":25.0,"close":"11/24/2025","days_past_close":252,"owner":"Tracey Anderson","stage":"Discovery","next_step":"Set up an appointment"},{"account":"WANNER ENGINEERING, INC.","opp":"SpinnerTTS/Wanner","amount":415800.0,"prob":25.0,"close":"11/28/2025","days_past_close":248,"owner":"Tracey Anderson","stage":"Discovery","next_step":"Call in a week"},{"account":"CIRTEC MEDICAL CORP.","opp":"SpinnerLTBS32/Cirtec","amount":415800.0,"prob":25.0,"close":"9/30/2025","days_past_close":307,"owner":"Tracey Anderson","stage":"Discovery","next_step":"Call in a week"},{"account":"UMC, Inc","opp":"Spinner/UMC","amount":415800.0,"prob":25.0,"close":"10/27/2025","days_past_close":280,"owner":"Tracey Anderson","stage":"Discovery","next_step":"Set up an appointment"},{"account":"IPS Cranes","opp":"HW / KBN1300/   IPS CRANES - Expand Capabilities","amount":600000.0,"prob":50.0,"close":"6/30/2026","days_past_close":34,"owner":"Richard Kappelhoff","stage":"Negotiation","next_step":""},{"account":"BOSTON SCIENTIFIC CORPORATION","opp":"Microturn IMST - Boston Sci. - Process Improvements","amount":null,"prob":25.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Time Study"},{"account":"ERMAK METALS, INC..","opp":"Hyundai/HD2200/Ermak Metals","amount":null,"prob":25.0,"close":"12/31/2024","days_past_close":580,"owner":"Doug Fink","stage":"Discovery","next_step":""},{"account":"RIVERSIDE MACHINE & ENGINEERING","opp":"Enshu / GE580H w/ rotary / Riverside","amount":null,"prob":25.0,"close":"1/9/2026","days_past_close":206,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"still trying to get in front of customer"},{"account":"TRANE COMPANY, THE","opp":"Koike / weld positioners / Trane","amount":250000.0,"prob":50.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"review and approval"},{"account":"ELECTRIC MACHINERY COMPANY LLC","opp":"YCM/ JD322 / Electric machine","amount":400000.0,"prob":25.0,"close":"3/24/2025","days_past_close":497,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"waiting capX"},{"account":"ELECTRIC MACHINERY COMPANY LLC","opp":"Spinner / TC800 / Electric Machine","amount":275000.0,"prob":25.0,"close":"4/21/2025","days_past_close":469,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Waiting on Cap X"},{"account":"KINGS CUSTOM MACHINING","opp":"Hyundai WIa SE2200L","amount":90000.0,"prob":25.0,"close":"12/31/2025","days_past_close":215,"owner":"Tracey Anderson","stage":"Discovery","next_step":"Create a quote"},{"account":"BRENK BROTHERS, INC.","opp":"5-Axis Spinner/ YCM - Brenk - Add Capacity","amount":516000.0,"prob":25.0,"close":"12/30/2025","days_past_close":216,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Waiting for Customer Response"},{"account":"TOOLING SOLUTIONS WORLDWIDE","opp":"Hanwha/Tooling Solutions Worldwide","amount":320000.0,"prob":25.0,"close":"2/28/2026","days_past_close":156,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Waiting"},{"account":"Western Machining","opp":"Hanwha/16mm to 38mm/Wester machine","amount":350000.0,"prob":25.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Waiting"},{"account":"Pivotal Manufacturing Inc.","opp":"Senfeng/SF3015H 3&6KW/PMI","amount":200000.0,"prob":50.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"demo"},{"account":"BRENK BROTHERS, INC.","opp":"Enshu / GE460H / 15K-118tools Brenk Brothers","amount":300000.0,"prob":25.0,"close":"1/31/2025","days_past_close":549,"owner":"Doug Fink","stage":"Discovery","next_step":"generate Quote"},{"account":"NELSON NUMERIC, LLC","opp":"Cosen 260nc / Nelson Newmeric","amount":32000.0,"prob":50.0,"close":"5/30/2025","days_past_close":430,"owner":"Doug Fink","stage":"Create Quote","next_step":"sent quote waiting for approval"},{"account":"Ziegler Inc","opp":"Senfeng 740 ton break/ Ziegler Cat","amount":650000.0,"prob":25.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Wait"},{"account":"IPS Cranes","opp":"YCM D212DM / IPS Crains  big bed mill","amount":300000.0,"prob":25.0,"close":"6/30/2026","days_past_close":34,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":""},{"account":"Serco Loaders","opp":"YCM/JC16/Serco loaders","amount":172000.0,"prob":50.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"contact customer"},{"account":"RAVELING COMPANIES, LLC","opp":"Hyundai/KF5600II/Raveling","amount":100000.0,"prob":50.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Send customer quote"},{"account":"INTEGRITE MANUFACTURING CORP.","opp":"Hyundia Wia/Integrity","amount":125000.0,"prob":50.0,"close":"2/28/2026","days_past_close":156,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"Call in a week"},{"account":"PRECISION TECHNOLOGIES, INC.","opp":"E160A","amount":68000.0,"prob":50.0,"close":"2/28/2026","days_past_close":156,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"Call in a week"},{"account":"TB INDUSTRIES, INC.","opp":"Senfeng 6020T","amount":350000.0,"prob":25.0,"close":"9/26/2025","days_past_close":311,"owner":"Tracey Anderson","stage":"Discovery","next_step":"create a quote"},{"account":"Innovative Recreation","opp":"Cosen/Saw/Innovative Rec.","amount":52000.0,"prob":50.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Create quote"},{"account":"COMMERICAL CONTRACTORS COMPANY OF MELROSE, INC.","opp":"WYsong/CCC, Inc.","amount":249000.0,"prob":50.0,"close":"10/31/2025","days_past_close":276,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"Call in a week"},{"account":"TC/American Crane Co.","opp":"Hyundai lathe/tc american","amount":125000.0,"prob":50.0,"close":"1/1/2026","days_past_close":214,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"Create a quote"},{"account":"CENTRAL PLAINS INDUSTRIES","opp":"YCM DX324/224 or Trimill Project","amount":1000000.0,"prob":25.0,"close":"8/29/2025","days_past_close":339,"owner":"Doug Fink","stage":"Discovery","next_step":"Quotes"},{"account":"SUBURBAN MANUFACTURING, INC.","opp":"Suburban HD2600M","amount":135000.0,"prob":50.0,"close":"12/26/2025","days_past_close":220,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"create a quote"},{"account":"NEUWEG INDUSTRIES, LLC","opp":"Hyundai KF7600L","amount":229000.0,"prob":50.0,"close":"2/28/2026","days_past_close":156,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"Get a quote together"},{"account":"CLARUS, INC.","opp":"Hyundai/HD2600Sy/Clarus Inc.","amount":157000.0,"prob":50.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Waiting"},{"account":"KURT MANUFACTURING DIE CAST","opp":"Hyundai-YCM/VMC'/Kurt MFG Die cast","amount":165000.0,"prob":25.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"contact customer"},{"account":"Pivotal Manufacturing Inc.","opp":"Hyundai/SE2200LSY/Pivotal","amount":240000.0,"prob":75.0,"close":"7/31/2025","days_past_close":368,"owner":"Richard Kappelhoff","stage":"Negotiation","next_step":"Contact customer"},{"account":"SHEYENNE TOOLING & MFG","opp":"Hyundai HS6300 Sheyenne Tool","amount":525000.0,"prob":50.0,"close":"10/3/2025","days_past_close":304,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"Set up an appointment"},{"account":"AASEBY INDUSTRIAL MACHINING","opp":"Cosen 260","amount":38000.0,"prob":50.0,"close":"9/30/2025","days_past_close":307,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"create a quote"},{"account":"PRECISION TECHNOLOGIES, INC.","opp":"Hyundai Kit4500","amount":68000.0,"prob":50.0,"close":"2/28/2026","days_past_close":156,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"Call in a week"},{"account":"SHEYENNE TOOLING & MFG","opp":"Hyundai HS8000II","amount":685000.0,"prob":50.0,"close":"9/30/2025","days_past_close":307,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"Create a quote"},{"account":"Golden View Colony","opp":"Cosen / AV-2026 /Golden view","amount":116000.0,"prob":10.0,"close":"8/31/2025","days_past_close":337,"owner":"Doug Fink","stage":"Call","next_step":"sent quote waiting for approval"},{"account":"MERCHANT MFG., INC.","opp":"YCM L8-SY/Merchant","amount":275000.0,"prob":50.0,"close":"10/31/2025","days_past_close":276,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"create a quote"},{"account":"TAURUS TOOL, INC.","opp":"Cosen460/Taurus Tool","amount":52000.0,"prob":50.0,"close":"3/31/2026","days_past_close":125,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"create a quote"},{"account":"Daka Corporation","opp":"Senfeng/Tube Laser/Daka Corp","amount":390000.0,"prob":75.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Negotiation","next_step":"quote"},{"account":"Michaud Machining","opp":"Supertec/1224NC/Michaud","amount":68000.0,"prob":50.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Follow up"},{"account":"CAST CORPORATION","opp":"Hyundai Wia/HD3100Sy/Cast Corp","amount":212000.0,"prob":75.0,"close":"11/24/2025","days_past_close":252,"owner":"Richard Kappelhoff","stage":"Negotiation","next_step":"Follow up"},{"account":"Sudenga Industries, Inc.","opp":"Spinner/TC600-85/Sudenga Industries","amount":215000.0,"prob":50.0,"close":"12/30/2025","days_past_close":216,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Quote"},{"account":"Fabex","opp":"Wysong/400 ton brake/Fabex","amount":500000.0,"prob":25.0,"close":"12/31/2025","days_past_close":215,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Site Visit"},{"account":"AURELIUS MFG. CO.","opp":"Wia/L800D/Aurelius","amount":525000.0,"prob":25.0,"close":"4/30/2026","days_past_close":95,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Get a quote for the Chuck"},{"account":"Key Electric & Automation","opp":"Hyundai/L2600/Key Electric","amount":250000.0,"prob":25.0,"close":"3/31/2026","days_past_close":125,"owner":"Colin Bergs","stage":"Discovery","next_step":"quote"},{"account":"UNIMATIC, INC.","opp":"Hanwha/HD26IIH","amount":249000.0,"prob":25.0,"close":"2/18/2026","days_past_close":166,"owner":"Tracey Anderson","stage":"Discovery","next_step":"Call in a week"},{"account":"DOUGLAS MACHINING SERVICE, LLC","opp":"Swiss/ Hanwha/Douglas Machine","amount":320000.0,"prob":25.0,"close":"12/31/2026","days_past_close":-150,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Site Visit"},{"account":"BEHLEN MFG. COMPANY","opp":"Senfeng Sheetlaser/Behlen","amount":782860.0,"prob":25.0,"close":"4/30/2026","days_past_close":95,"owner":"Tracey Anderson","stage":"Discovery","next_step":""},{"account":"MARSHALL MANUFACTURING CO.","opp":"Wia/KF4/Marshall MFG","amount":120000.0,"prob":50.0,"close":"11/30/2026","days_past_close":-119,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Call"},{"account":"ALTIMATE MEDICAL, INC.","opp":"Senfeng/1530G/Altimate Medical","amount":105000.0,"prob":50.0,"close":"4/30/2026","days_past_close":95,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"contact customer"},{"account":"Rensberger Technologies","opp":"YCM/Impulse 5/Rensberger","amount":130000.0,"prob":50.0,"close":"5/31/2026","days_past_close":64,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Send Quote"},{"account":"Brand Manufacturing, Inc.","opp":"Senfeng/BDE17032/Brand Mfg","amount":150000.0,"prob":75.0,"close":"5/31/2026","days_past_close":64,"owner":"Richard Kappelhoff","stage":"Negotiation","next_step":"Tooling"},{"account":"TEREX MANUFACTURING Huron","opp":"Wia/Lathe/Terex","amount":400000.0,"prob":25.0,"close":"7/31/2026","days_past_close":3,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Quote"},{"account":"TEREX MANUFACTURING Huron","opp":"TCI/5x10 Smart line/Terex","amount":600000.0,"prob":25.0,"close":"5/31/2027","days_past_close":-301,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Quote"},{"account":"TEREX MANUFACTURING Huron","opp":"YCM/Bridge Mill/Terex","amount":750000.0,"prob":25.0,"close":"4/30/2027","days_past_close":-270,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Quote"},{"account":"Lankota","opp":"TCI/water jet/Lankota","amount":200000.0,"prob":50.0,"close":"6/30/2026","days_past_close":34,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Quote"},{"account":"HORIZONTAL MACHINING & Manufacturing","opp":"TCI/Powerline FL/HMMI","amount":2400000.0,"prob":75.0,"close":"6/30/2026","days_past_close":34,"owner":"Richard Kappelhoff","stage":"Negotiation","next_step":"re-quote"},{"account":"Wetherell Mfg Co","opp":"Coson Dual column","amount":35000.0,"prob":25.0,"close":"11/30/2026","days_past_close":-119,"owner":"Colin Bergs","stage":"Discovery","next_step":"Create a quote"},{"account":"Iowa Tool & Mfg., Inc.","opp":"CosenC320/Iowa tool","amount":45000.0,"prob":50.0,"close":"12/31/2026","days_past_close":-150,"owner":"Colin Bergs","stage":"Create Quote","next_step":"create a quote"},{"account":"Landbouw Manufacturing","opp":"Cosen/landbouw","amount":45000.0,"prob":50.0,"close":"12/31/2026","days_past_close":-150,"owner":"Colin Bergs","stage":"Create Quote","next_step":"create a quote"},{"account":"PAUL KRAFT MPLS","opp":"Senfeng Tube/Kraft","amount":250000.0,"prob":25.0,"close":"12/31/2026","days_past_close":-150,"owner":"Tracey Anderson","stage":"Discovery","next_step":"create a quote"},{"account":"PAUL KRAFT MPLS","opp":"SenfengSheet?Kraft","amount":200000.0,"prob":25.0,"close":"12/31/2026","days_past_close":-150,"owner":"Tracey Anderson","stage":"Discovery","next_step":"create a quote"},{"account":"FAB FOUR INC.","opp":"YCM DX224DM/5axis","amount":798000.0,"prob":25.0,"close":"12/31/2026","days_past_close":-150,"owner":"Tracey Anderson","stage":"Discovery","next_step":"create a quote"},{"account":"MACHINEWELL, INC","opp":"Machinewell/CosenC320","amount":45000.0,"prob":50.0,"close":"12/31/2026","days_past_close":-150,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"Call in a week"},{"account":"GENESIS ATTACHMENTS, LLC","opp":"Genesis/L4000/ Wia","amount":194000.0,"prob":50.0,"close":"9/30/2026","days_past_close":-58,"owner":"Richard Kappelhoff","stage":"Create Quote","next_step":"Follow up"},{"account":"Quality Sheet Metal","opp":"Quality Sheet Metal Fabricators","amount":30000.0,"prob":25.0,"close":"10/30/2026","days_past_close":-88,"owner":"Colin Bergs","stage":"Discovery","next_step":""},{"account":"Styme Industries","opp":"Styme/ Senfeng Tube","amount":352000.0,"prob":50.0,"close":"12/31/2026","days_past_close":-150,"owner":"Tracey Anderson","stage":"Create Quote","next_step":"Create a quote"},{"account":"BTD MANUFACTURING, INC.","opp":"Cosen/C420","amount":60000.0,"prob":75.0,"close":"12/31/2026","days_past_close":-150,"owner":"Tracey Anderson","stage":"Negotiation","next_step":"create a quote"},{"account":"QUALITY TOOL","opp":"Quality Tool/LM1800TTSY/WIA","amount":350000.0,"prob":25.0,"close":"12/31/2027","days_past_close":-515,"owner":"Richard Kappelhoff","stage":"Discovery","next_step":"Quote customer"},{"account":"HORTON, INC.","opp":"Enshu/Ge480GH 20K","amount":280000.0,"prob":75.0,"close":"12/31/2026","days_past_close":-150,"owner":"Richard Kappelhoff","stage":"Negotiation","next_step":"Quote"}];
+const TODAY = new Date(2026, 7, 3);
+const REPS = ["Richard Kappelhoff", "Tracey Anderson", "Doug Fink", "Colin Bergs", "Brent Basinski"];
+
+const fmt = n => n == null ? "—" : "$" + Math.round(n).toLocaleString("en-US");
+const fmtK = n => n == null ? "—" : n >= 1e6 ? "$" + (n/1e6).toFixed(n >= 1e7 ? 0 : 1) + "M" : "$" + Math.round(n/1e3) + "k";
+const esc = s => (s || "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const BUCKET = { live: {label: "Live", cls: "live"}, lapsed: {label: "Lapsed", cls: "lapsed"}, dead: {label: "Dormant 1yr+", cls: "dead"} };
+DATA.forEach(d => {
+  d.b = d.days_past_close > 365 ? "dead" : d.days_past_close > 0 ? "lapsed" : "live";
+  d.w = (d.amount || 0) * d.prob / 100;
+});
+
+/* ---- tiles ---- */
+const total = DATA.reduce((s, d) => s + (d.amount || 0), 0);
+const weighted = DATA.reduce((s, d) => s + d.w, 0);
+const live = DATA.filter(d => d.b === "live");
+const past = DATA.filter(d => d.b !== "live");
+const pastV = past.reduce((s, d) => s + (d.amount || 0), 0);
+const liveV = live.reduce((s, d) => s + (d.amount || 0), 0);
+document.getElementById("tiles").innerHTML = `
+  <div class="tile"><div class="k">Total open pipeline</div><div class="v">${fmtK(total)}</div><div class="d">${DATA.length} opportunities · 5 reps</div></div>
+  <div class="tile"><div class="k">Weighted value</div><div class="v">${fmtK(weighted)}</div><div class="d">amount × stated probability</div></div>
+  <div class="tile"><div class="k">Live deals</div><div class="v ok">${fmtK(liveV)}</div><div class="d">${live.length} deals with a future close date</div></div>
+  <div class="tile"><div class="k">Past close date</div><div class="v bad">${fmtK(pastV)}</div><div class="d">${past.length} deals lapsed · ${DATA.filter(d=>d.b==="dead").length} of them by 1yr+</div></div>`;
+document.getElementById("headline").innerHTML =
+  `<b>The book is full but the calendar is empty:</b> ${Math.round(100*pastV/total)}% of pipeline dollars sit behind their own close dates. Before anyone chases net-new leads, one week of triage — confirm, re-date, or kill — turns this from an archive back into a forecast. The tiers below are that triage, in order.`;
+
+/* ---- rep chart ---- */
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function drawChart() {
+  const order = ["live", "lapsed", "dead"];
+  const colors = { live: css("--live"), lapsed: css("--lapsed"), dead: css("--dead") };
+  document.getElementById("legend").innerHTML =
+    `<span><span class="sw" style="background:${colors.live}"></span>Live (close date ahead)</span>
+     <span><span class="sw" style="background:${colors.lapsed}"></span>Lapsed &lt; 1 yr</span>
+     <span><span class="sw" style="background:${colors.dead}"></span>Dormant 1 yr+</span>`;
+  const byRep = REPS.map(r => {
+    const rows = DATA.filter(d => d.owner === r);
+    const seg = {};
+    order.forEach(b => seg[b] = { v: rows.filter(d => d.b === b).reduce((s, d) => s + (d.amount || 0), 0), n: rows.filter(d => d.b === b).length });
+    return { rep: r, rows, seg, tot: rows.reduce((s, d) => s + (d.amount || 0), 0) };
+  });
+  const max = Math.max(...byRep.map(r => r.tot));
+  const W = 1000, rowH = 46, labelW = 172, valW = 92, H = byRep.length * rowH + 8;
+  const plotW = W - labelW - valW;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Open pipeline dollars by rep, split by deal freshness" style="width:100%;height:auto;font:13px system-ui,sans-serif">`;
+  byRep.forEach((r, i) => {
+    const y = i * rowH + 8, h = 24;
+    svg += `<text x="${labelW - 12}" y="${y + h/2 + 1}" text-anchor="end" dominant-baseline="middle" fill="${css("--ink")}" font-weight="650">${esc(r.rep)}</text>`;
+    svg += `<text x="${labelW - 12}" y="${y + h/2 + 15}" text-anchor="end" dominant-baseline="middle" fill="${css("--ink-3")}" font-size="11">${r.rows.length} deals</text>`;
+    let x = labelW;
+    order.forEach(b => {
+      const wpx = max ? r.seg[b].v / max * plotW : 0;
+      if (wpx > 0.5) {
+        svg += `<rect class="seg" data-rep="${esc(r.rep)}" data-b="${b}" data-v="${r.seg[b].v}" data-n="${r.seg[b].n}" x="${x + 1}" y="${y}" width="${Math.max(wpx - 2, 1)}" height="${h}" rx="3" fill="${colors[b]}"/>`;
+        x += wpx;
+      }
+    });
+    svg += `<text x="${x + 10}" y="${y + h/2 + 1}" dominant-baseline="middle" fill="${css("--ink-2")}" font-variant-numeric="tabular-nums" font-weight="650">${fmtK(r.tot)}</text>`;
+  });
+  svg += `</svg>`;
+  document.getElementById("repchart").innerHTML = svg;
+
+  const tip = document.getElementById("tip");
+  document.querySelectorAll("#repchart .seg").forEach(el => {
+    el.addEventListener("mousemove", e => {
+      const b = el.dataset.b;
+      tip.innerHTML = `<b>${esc(el.dataset.rep)} — ${BUCKET[b].label}</b>
+        <div class="row"><span>Value</span><span>${fmt(+el.dataset.v)}</span></div>
+        <div class="row"><span>Deals</span><span>${el.dataset.n}</span></div>`;
+      tip.style.opacity = 1;
+      const pad = 14, tw = tip.offsetWidth;
+      tip.style.left = Math.min(e.clientX + pad, innerWidth - tw - 8) + "px";
+      tip.style.top = (e.clientY + pad) + "px";
+    });
+    el.addEventListener("mouseleave", () => tip.style.opacity = 0);
+  });
+}
+drawChart();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawChart);
+new MutationObserver(drawChart).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+/* ---- tier tables ---- */
+function daysNote(d) {
+  if (d.b === "live") return `closes ${d.close}`;
+  return `${d.days_past_close} days past (${d.close})`;
+}
+function dealRows(list, showLapse) {
+  return `<thead><tr><th>Account / opportunity</th><th>Rep</th><th class="num">Amount</th><th class="num">Prob</th><th>Stage</th><th>Close</th><th>Next step on record</th></tr></thead><tbody>` +
+    list.map(d => `<tr>
+      <td class="acct">${esc(d.account)}<span class="opp">${esc(d.opp)}</span></td>
+      <td>${esc(d.owner.split(" ")[0])}</td>
+      <td class="num">${fmt(d.amount)}</td>
+      <td class="num">${d.prob}%</td>
+      <td><span class="pill stage">${esc(d.stage)}</span></td>
+      <td>${showLapse ? `<span class="pill ${BUCKET[d.b].cls}">${esc(daysNote(d))}</span>` : esc(d.close)}</td>
+      <td style="max-width:24ch">${esc(d.next_step) || "—"}</td>
+    </tr>`).join("") + `</tbody>`;
+}
+const t1 = DATA.filter(d => d.b === "live" && d.prob >= 50 && d.amount).sort((a, b) => b.w - a.w);
+document.getElementById("t1").innerHTML = dealRows(t1, false);
+const t2 = DATA.filter(d => d.b !== "live" && d.prob >= 50 && d.amount >= 100000 && d.days_past_close <= 270).sort((a, b) => b.w - a.w);
+document.getElementById("t2").innerHTML = dealRows(t2, true);
+
+/* ---- rigging leads ---- */
+const LEADS = [
+  { name: "Rigid Hitch — Burnsville", sig: "Relocation study · Jul 28", quote: "I have just been approached by the Board to do a feasibility study of moving our entire manufacturing department off-site… They want to know approximately how much it will cost to move all the equipment.",
+    play: "Brian scopes the move budget now — whoever shapes the study shapes the bid. Machine-tool angle: full inventory already captured (Haas VF-4, HydMech 16A, Amada VT3850A, Piranha ironworker, Panasonic Tawers cell). A move is when replace-vs-relocate decisions get made — get a rep into the walkthrough.", who: "Brent + Brian, rep TBD at walkthrough" },
+  { name: "Structural Wood Corp", sig: "Named future work · Jul 22", quote: "You have good timing… I would like to talk to you about some work that I am fairly certain we will be doing here later this year.",
+    play: "Jim Schumacher asked Brent to pick a morning and never got one — 8+ days unanswered. Book the visit this week. Customer-initiated, near-certain work in 2026.", who: "Brent — they asked for him by name" },
+  { name: "Lakes Area Mfg — Shafer", sig: "Selling assets · Jul 30", quote: "We have two Hardinge Cobra 65's and two LNS Quick Load servo bar feeders we would like to sell.",
+    play: "Source Machinery acquisition visit + rigging the load-out. Second angle: a shop shedding two lathes is changing its process — ask what's replacing them.", who: "Source Machinery (Brenda), rigging quote from Brian" },
+  { name: "Clow Stamping — Brainerd", sig: "Floor invitation · Jul 28", quote: "I would like to set up a time for you to come out and review the equipment we have for sale and make us an offer… meet with our facilities and maintenance manager, Jeff Wohl.",
+    play: "An open floor walk is the highest-converting signal there is. Even if the lot is rough, you leave with a full machine inventory and the facilities manager's cell number.", who: "Source Machinery + rep for the walk" },
+  { name: "Atlas Games — Proctor / Duluth", sig: "Selling assets · Jul 30", quote: "We got set up to do some minor plastic injection molding, but our plans have changed, and I'd love to move out the equipment. We haven't used it ourselves.",
+    play: "Motivated seller, potentially zero-hour equipment. Buy-side for Source Machinery plus the removal job for R&R.", who: "Source Machinery (Brenda)" },
+  { name: "Precision Air Products", sig: "Capacity shift · Jul 28", quote: "Moving two press brakes (Atlantic HD 17,100 lb + Verson) from Burnsville to Bloomington — priced internally at $5k with leveling.",
+    play: "Find out what Bloomington is. A shop consolidating brake capacity usually moves more equipment within 6–12 months — and may buy. Pipeline already has six press-brake shoppers; if Precision Air sheds a brake, we know the buyers.", who: "Tracey (metro fab coverage)" },
+  { name: "Hydraulic Specialty", sig: "Selling 2 CNC · Jul 22", quote: "I do have Brenda working on selling two of our CNC machines though.",
+    play: "Already in Brenda's hands — the point is the pattern: third seller of CNC turning capacity in two weeks. Log the machines and who buys them.", who: "Source Machinery (in progress)" },
+  { name: "ACT Machinery — Rosemount", sig: "Dealer load-outs · Jul 21", quote: "Star SR 2913J2 swiss lathe + bar feeder loaded out to buyer's truck — $2,450, quote took 5 days and two customer chase-ups.",
+    play: "Recurring rigging revenue and free market intel on what's trading. Fix the quote turnaround — 5 days with Molly chasing twice is how this account walks.", who: "House / Brian (service-level fix)" }
+];
+document.getElementById("leads").innerHTML = LEADS.map(l => `
+  <div class="card lead">
+    <div class="top"><h3>${esc(l.name)}</h3><span class="sig">${esc(l.sig)}</span></div>
+    <blockquote>&ldquo;${esc(l.quote)}&rdquo;</blockquote>
+    <div class="play"><b>Play:</b> ${esc(l.play)}</div>
+    <div class="meta">Suggested coverage: ${esc(l.who)}</div>
+  </div>`).join("");
+
+/* ---- cross-market matches ---- */
+const MATCHES = [
+  { h: "CNC lathe supply is spiking — and the pipeline knows the buyers", p: [
+    "<b>Sellers (rigging side, last 2 weeks):</b> Lakes Area Mfg (2× Hardinge Cobra 65 + 2 bar feeders), Hydraulic Specialty (2 CNC), ACT Machinery (Star swiss lathe just traded).",
+    "<b>Shoppers (pipeline):</b> Key Electric ($250k Hyundai L2600, Colin), TC/American Crane ($125k lathe, Tracey), Kings Custom ($90k SE2200L), Precision Technologies ($68k E160A + $68k KIT4500), Aurelius ($525k L800D), Terex ($400k Wia lathe).",
+    "<b>Play:</b> offer the budget-constrained shoppers a used Cobra 65 path — or use trade-in appetite to unstick the new-machine quotes. Nobody else sees both sides of this market." ]},
+  { h: "Press brakes are moving — six brake shoppers sit in the pipeline", p: [
+    "<b>Signal:</b> Precision Air is consolidating two brakes into Bloomington. Shops that consolidate often sell the surplus unit.",
+    "<b>Shoppers:</b> Kayla Enterprises (6' Wysong), X-Stream Waterjetting (6' brake, Tracey), HSI Mfg ($124k Wysong MS), CCC of Melrose ($249k), Fabex ($500k 400-ton), Ziegler CAT ($650k 740-ton).",
+    "<b>Play:</b> if a Verson or Atlantic HD frees up, two of these shoppers are a fit at used pricing — and every brake that trades is an R&R move." ]},
+  { h: "Every big machine order on the close list is also a rigging job", p: [
+    "<b>Attach installs now:</b> HMMI TCI Powerline FL ($2.4M — a full line install), Sheyenne HS6300 + HS8000II ($1.2M combined), Horton Enshu ($280k), Daka tube laser ($390k), Styme tube laser ($352k), Behlen sheet laser ($783k), Fab Four 5-axis ($798k).",
+    "<b>Play:</b> quote rigging/install inside the machine proposal, not after the PO. It protects margin, blocks competitors from the site, and the site photos feed the intel base for the next decade." ]},
+  { h: "The Rigid Hitch inventory is a replacement-cycle target list", p: [
+    "Five machines captured for free: Haas VF-4, HydMech 16A saw, Amada VT3850A saw, Piranha 90T ironworker, Panasonic Tawers welding cell.",
+    "<b>Play:</b> pipeline proves our saw business is alive (8 Cosen deals open). When the relocation study lands, pitch replace-instead-of-move on the older saws — moving a tired machine costs real money that converts cleanly into a down payment on a new one." ]}
+];
+document.getElementById("matches").innerHTML = MATCHES.map(m =>
+  `<div class="card match"><div class="h">${m.h}</div>${m.p.map(x => `<p>${x}</p>`).join("")}</div>`).join("");
+
+/* ---- rep cards ---- */
+const REPCARDS = [
+  { rep: "Richard Kappelhoff", items: [
+    "<b>Carries 53% of pipeline dollars ($22.9M, 57 deals)</b> — and 50 of them are past close date. He can't work 57; pick the ten that matter.",
+    "<b>This week:</b> HMMI $2.4M @75% lapsed Jul 1 with 're-quote' as next step — that's the single biggest number in the company. Then Horton ($280k @75%, live), Daka ($390k), Cast Corp ($212k), IPS Cranes ($600k).",
+    "<b>Electric Machinery is a $7.4M whale across 5 stalled opps</b> (incl. the $6M Droop & Rein). One account-plan meeting, not five zombie records.",
+    "Offload the sub-$60k saw deals to inside/another rep — they're clogging the calendar of the guy holding the seven-figure book." ]},
+  { rep: "Tracey Anderson", items: [
+    "<b>Best live book after Richard</b> — Styme ($352k), BTD (@75%), Machinewell, plus Sheyenne's $1.2M pair just lapsed and needs a date-check call.",
+    "<b>Delete the placeholders:</b> six identical $415,800 Spinner opps (UMC ×2, C-Axis, LISI, Wanner, Cirtec) — all stale, all template amounts. They inflate her book by $2.5M of fiction.",
+    "<b>But keep the vertical:</b> those six accounts plus Integer and Boston Scientific are a real Twin Cities medical-machining cluster. Re-work it as a Swiss/turning campaign with real numbers.",
+    "Add Precision Air Products (rigging signal) to her metro fab route." ]},
+  { rep: "Doug Fink", items: [
+    "<b>100% of his 15 deals are past close date — the entire book needs a two-day scrub.</b>",
+    "<b>Verify first:</b> AGCO HEC 800 ($1.7M @75%, note says project moved to '25 — it's now Aug '26), Hanson Silo fiber laser ($1.2M @50%), Command Tooling ($200k @75%, lapsed 19 months).",
+    "Central Plains ($1M) and Brenk ($300k) are Discovery-stage — requalify or release.",
+    "Until the scrub is done his forecast contributes $2.7M weighted that nobody can trust." ]},
+  { rep: "Colin Bergs", items: [
+    "<b>Book is mostly 2023 archaeology</b> — Bobalee, Zermatt, Capps, Dramco, J A Max ($175k @75% lapsed 3 years). Close them out; they're distorting every report.",
+    "<b>Live and real:</b> Key Electric $250k Hyundai lathe (quote stage), Iowa Tool, Landbouw, Quality Sheet Metal.",
+    "Key Electric is also the used-lathe match: if budget stalls the new L2600, Lakes Area's Cobra 65s are the counter." ]},
+  { rep: "Brent Basinski", items: [
+    "All 6 of your own opps are lapsed small-ball — close them and stay in the manager seat.",
+    "<b>You personally own two warm doors:</b> Structural Wood (Jim asked you to pick a morning — 12 days ago) and Rigid Hitch's Eldon Nash (EVP, reports to the Board, replied to your campaign).",
+    "Run the weekly triage cadence: every deal touched gets a real close date or a close-out. The dashboard rebuilds from the next export." ]}
+];
+document.getElementById("repcards").innerHTML = REPCARDS.map(rc => {
+  const rows = DATA.filter(d => d.owner === rc.rep);
+  const lv = rows.filter(d => d.b === "live").length;
+  return `<div class="card repcard"><h3>${esc(rc.rep)}<span class="stat">${rows.length} deals · ${lv} live</span></h3><ul>${rc.items.map(i => `<li>${i}</li>`).join("")}</ul></div>`;
+}).join("");
+
+/* ---- full table ---- */
+let repSel = "All", stSel = "All";
+function chiprow(el, opts, get, set) {
+  el.innerHTML = opts.map(o => `<button class="chip${get() === o ? " on" : ""}" data-v="${esc(o)}">${esc(o)}</button>`).join("");
+  el.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => { set(b.dataset.v); renderFilters(); renderFull(); }));
+}
+function renderFilters() {
+  chiprow(document.getElementById("repfilter"), ["All", ...REPS], () => repSel, v => repSel = v);
+  chiprow(document.getElementById("statusfilter"), ["All", "Live", "Lapsed", "Dormant 1yr+"], () => stSel, v => stSel = v);
+}
+const stMap = { "Live": "live", "Lapsed": "lapsed", "Dormant 1yr+": "dead" };
+function renderFull() {
+  let rows = DATA.slice().sort((a, b) => b.w - a.w);
+  if (repSel !== "All") rows = rows.filter(d => d.owner === repSel);
+  if (stSel !== "All") rows = rows.filter(d => d.b === stMap[stSel]);
+  document.getElementById("full").innerHTML =
+    `<thead><tr><th>Account / opportunity</th><th>Rep</th><th class="num">Amount</th><th class="num">Prob</th><th class="num">Weighted</th><th>Stage</th><th>Status</th><th>Next step</th></tr></thead><tbody>` +
+    rows.map(d => `<tr>
+      <td class="acct">${esc(d.account)}<span class="opp">${esc(d.opp)}</span></td>
+      <td>${esc(d.owner.split(" ")[0])}</td>
+      <td class="num">${fmt(d.amount)}</td>
+      <td class="num">${d.prob}%</td>
+      <td class="num">${fmt(d.w)}</td>
+      <td><span class="pill stage">${esc(d.stage)}</span></td>
+      <td><span class="pill ${BUCKET[d.b].cls}">${esc(daysNote(d))}</span></td>
+      <td style="max-width:26ch">${esc(d.next_step) || "—"}</td>
+    </tr>`).join("") + `</tbody>` +
+    (rows.length === 0 ? `<tbody><tr><td colspan="8" style="color:var(--ink-3)">No deals match this filter.</td></tr></tbody>` : "");
+}
+renderFilters(); renderFull();
+</script>
+
+</body>
+</html>
